@@ -36,11 +36,21 @@ export interface PlayerPosition extends Point {
   playerId: string;
 }
 
+export type AnnotationType = 'run' | 'pass';  // 실선=움직임, 점선=패스
+
+export interface Annotation {         // 전술 그리기 화살표 (2026-09-01, TO-DO 1번)
+  id: string;                         // nanoid. 저장·재로드해도 불변
+  type: AnnotationType;
+  from: Point;                        // 시작점 (자유 좌표 — 선수 부착 아님)
+  to: Point;
+}
+
 export interface PhaseData {
   positions: PlayerPosition[];        // 자팀 11명
   opponentPositions?: Point[];        // 있으면 11개 전부
   pressingLineY?: number;             // 없으면 자동 산출
   comment: string;
+  annotations: Annotation[];          // zod .default([]) — 구버전 JSON은 빈 배열로 채워짐
 }
 
 export interface Analysis {
@@ -176,10 +186,14 @@ export const PITCH_WIDTH_M = 68;
       "positions": [{ "playerId": "p1", "x": 50, "y": 92 }],
       "opponentPositions": [{ "x": 50, "y": 12 }],
       "pressingLineY": 68,
-      "comment": "4-3-3 기본 배치"
+      "comment": "4-3-3 기본 배치",
+      "annotations": [
+        { "id": "a1", "type": "run",  "from": { "x": 30, "y": 60 }, "to": { "x": 45, "y": 30 } },
+        { "id": "a2", "type": "pass", "from": { "x": 50, "y": 45 }, "to": { "x": 78, "y": 25 } }
+      ]
     },
-    "attack": { "positions": [], "comment": "" },
-    "defense": { "positions": [], "comment": "" }
+    "attack": { "positions": [], "comment": "", "annotations": [] },
+    "defense": { "positions": [], "comment": "", "annotations": [] }
   },
   "summary": "빌드업 시 좌측 하프스페이스 오버로드",
   "createdAt": "2026-09-01T11:20:00",
@@ -195,7 +209,7 @@ export const PITCH_WIDTH_M = 68;
 
 ### 2.5 `PUT /api/analyses/{id}`
 
-전체 교체. 하위 `players`/`phases`/`positions`를 삭제 후 재삽입한다. 응답은 갱신된 전체 분석.
+전체 교체. 하위 `players`/`phases`/`positions`/`annotations`을 삭제 후 재삽입한다. 응답은 갱신된 전체 분석.
 
 ### 2.6 `DELETE /api/analyses/{id}`
 
@@ -207,6 +221,8 @@ Pydantic(서버)과 zod(클라이언트)에서 **동일한 규칙**을 적용한
 
 서버 스키마에서 `phases`는 고정 필드 3개를 가진 모델이 아니라 **`Dict[PhaseType, PhaseIn]`으로 선언**하고, "3개 키가 모두 존재" 조건은 validator로 검사한다. 4단계 `crud.upsert_analysis`가 `payload.phases.items()`로 순회하기 때문이며, 2차의 타임라인 확장에서 국면 종류가 늘어날 때도 구조를 바꾸지 않아도 된다.
 
+`AnnotationIn`의 시작점 필드는 JSON 키가 `from`이지만 **`from`은 파이썬 예약어**라 `from_: Point = Field(alias="from")` + `populate_by_name=True`로 선언하고, 응답 직렬화는 FastAPI 기본 동작(alias 우선)으로 `from`에 되돌아간다.
+
 | 대상 | 규칙 | 위반 시 |
 | --- | --- | --- |
 | `x`, `y` | `0 <= v <= 100` | 422 |
@@ -215,6 +231,7 @@ Pydantic(서버)과 zod(클라이언트)에서 **동일한 규칙**을 적용한
 | `phases` | `base`/`attack`/`defense` 3개 모두 존재 | 422 |
 | `positions` | 각 국면마다 11개, `playerId`가 `players`에 존재 | 422 |
 | `opponentPositions` | 생략 가능. 존재하면 정확히 11개 | 422 |
+| `annotations` | 각 국면마다 0개 이상. `type`은 `run` \| `pass`, 좌표는 0~100. 생략 가능(빈 배열 취급) | 422 |
 | `matchDate` | `YYYY-MM-DD` | 422 |
 | `analyzedTeam` | `home` \| `away` | 422 |
 | `schemaVersion` | `1` | 422 |
