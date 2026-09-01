@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "match": {
-    "matchName": "감독 스타일 프리셋 — 루이스 엔리케 (파리 생제르맹)",
-    "homeTeam": "파리 생제르맹",
+    "matchName": "감독 스타일 프리셋 — 루이스 엔리케 (파리 생제르망)",
+    "homeTeam": "파리 생제르망",
     "awayTeam": "상대팀",
     "matchDate": "2026-09-01",
     "competition": "감독 스타일 프리셋",
@@ -11,66 +11,80 @@
   "formation": "4-3-3",
   "players": [
     { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
-    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
+    { "id": "p5", "name": "LB", "number": 25, "role": "LB" },
     { "id": "p3", "name": "CB", "number": 4, "role": "CB" },
     { "id": "p4", "name": "CB", "number": 3, "role": "CB" },
-    { "id": "p5", "name": "LB", "number": 25, "role": "LB" },
+    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
     { "id": "p6", "name": "DM", "number": 5, "role": "DM" },
     { "id": "p7", "name": "CM", "number": 17, "role": "CM" },
     { "id": "p8", "name": "CM", "number": 6, "role": "CM" },
-    { "id": "p9", "name": "RW", "number": 7, "role": "RW" },
     { "id": "p10", "name": "LW", "number": 10, "role": "LW" },
-    { "id": "p11", "name": "ST", "number": 9, "role": "ST" }
+    { "id": "p11", "name": "ST", "number": 9, "role": "ST" },
+    { "id": "p9", "name": "RW", "number": 7, "role": "RW" }
   ],
   "phases": {
     "base": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 92 },
-        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p5", "x": 16, "y": 74 },
         { "playerId": "p3", "x": 38, "y": 78 },
         { "playerId": "p4", "x": 62, "y": 78 },
-        { "playerId": "p5", "x": 16, "y": 74 },
+        { "playerId": "p2", "x": 84, "y": 74 },
         { "playerId": "p6", "x": 50, "y": 62 },
         { "playerId": "p7", "x": 32, "y": 52 },
         { "playerId": "p8", "x": 68, "y": 52 },
-        { "playerId": "p9", "x": 84, "y": 30 },
         { "playerId": "p10", "x": 16, "y": 30 },
-        { "playerId": "p11", "x": 50, "y": 22 }
+        { "playerId": "p11", "x": 50, "y": 22 },
+        { "playerId": "p9", "x": 84, "y": 30 }
       ],
-      "comment": "기본 대형은 4-3-3. 점유율을 바탕으로 중앙 장악과 측면 풀백의 공격 가담을 노린다."
+      "annotations": [
+        { "id": "le-base-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 90, "y": 40 } }
+      ],
+      "comment": "기본 대형은 4-3-3. 수비형 미드(5번)가 혼자 백4 앞을 지키는 1피벗 구조이고, 양 인사이드 미드(6번·17번)가 자유롭게 전진한다. 양 풀백(2번·25번)의 높은 공격 가담이 이 시스템의 주 무기다."
     },
     "attack": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 88 },
-        { "playerId": "p2", "x": 92, "y": 26 },
-        { "playerId": "p3", "x": 38, "y": 78 },
-        { "playerId": "p4", "x": 62, "y": 78 },
         { "playerId": "p5", "x": 8, "y": 30 },
-        { "playerId": "p6", "x": 50, "y": 66 },
-        { "playerId": "p7", "x": 50, "y": 46 },
-        { "playerId": "p8", "x": 62, "y": 58 },
-        { "playerId": "p9", "x": 78, "y": 16 },
+        { "playerId": "p3", "x": 35, "y": 78 },
+        { "playerId": "p4", "x": 65, "y": 78 },
+        { "playerId": "p2", "x": 92, "y": 26 },
+        { "playerId": "p6", "x": 50, "y": 80 },
+        { "playerId": "p7", "x": 45, "y": 44 },
+        { "playerId": "p8", "x": 55, "y": 60 },
         { "playerId": "p10", "x": 22, "y": 16 },
-        { "playerId": "p11", "x": 50, "y": 10 }
+        { "playerId": "p11", "x": 50, "y": 10 },
+        { "playerId": "p9", "x": 78, "y": 16 }
       ],
-      "comment": "양쪽 풀백이 윙어 자리까지 극단적으로 전진하고, 미드필더 한 명이 그 공백을 메우며 앞으로 전진해 사실상 3-2-5 형태를 만든다. 전방 3명이 상대 백4를 고정시키는 사이 중원에서 수적 우위를 노린다."
+      "annotations": [
+        { "id": "le-atk-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 92, "y": 26 } },
+        { "id": "le-atk-lb", "type": "run", "from": { "x": 16, "y": 74 }, "to": { "x": 8, "y": 30 } },
+        { "id": "le-atk-dm", "type": "run", "from": { "x": 50, "y": 62 }, "to": { "x": 50, "y": 80 } },
+        { "id": "le-atk-p1", "type": "pass", "from": { "x": 65, "y": 78 }, "to": { "x": 90, "y": 30 } },
+        { "id": "le-atk-p2", "type": "pass", "from": { "x": 45, "y": 44 }, "to": { "x": 50, "y": 12 } }
+      ],
+      "comment": "공격 시 수비형 미드(5번)가 센터백(3번·4번) 사이로 내려와 백3을 완성한다. 그 대신 양 풀백(2번·25번)은 윙 자리까지 말려 올라가 사실상 양쪽 윙어가 되고, 원래 윙(7번·10번)은 안쪽 하프스페이스로 파고든다. 그 결과 3-2-5 공격 대형이 완성되어 상대 백4를 공격 5명으로 압도하고, 중앙의 6번·17번이 라인 사이에서 마지막 패스를 찾는다. 센터백(4번)의 대각 스위치 패스가 올라간 풀백의 돌파를 여는 것이 대표 루트다."
     },
     "defense": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 96 },
-        { "playerId": "p2", "x": 84, "y": 66 },
+        { "playerId": "p5", "x": 16, "y": 66 },
         { "playerId": "p3", "x": 38, "y": 70 },
         { "playerId": "p4", "x": 62, "y": 70 },
-        { "playerId": "p5", "x": 16, "y": 66 },
+        { "playerId": "p2", "x": 84, "y": 66 },
         { "playerId": "p6", "x": 50, "y": 56 },
         { "playerId": "p7", "x": 30, "y": 46 },
         { "playerId": "p8", "x": 70, "y": 46 },
-        { "playerId": "p9", "x": 80, "y": 34 },
         { "playerId": "p10", "x": 20, "y": 34 },
-        { "playerId": "p11", "x": 50, "y": 26 }
+        { "playerId": "p11", "x": 50, "y": 26 },
+        { "playerId": "p9", "x": 80, "y": 34 }
       ],
-      "comment": "비보유 시 4-1-4-1로 전환해 공격적으로 전방 압박(pressing after loss)을 가하며 볼을 다시 뺏은 뒤 곧바로 재전개한다."
+      "annotations": [
+        { "id": "le-def-st", "type": "run", "from": { "x": 50, "y": 26 }, "to": { "x": 44, "y": 18 } },
+        { "id": "le-def-mid", "type": "run", "from": { "x": 30, "y": 46 }, "to": { "x": 26, "y": 38 } }
+      ],
+      "comment": "비보유 시 4-1-4-1로 전환해 전방 압박을 건다. 5번이 백4 앞에서 단독 커버를 맡고, 미드 4명(6번·17번과 안으로 접어든 윙 2명)이 좁게 서서 상대 빌드업의 중앙 루트를 지운다. 볼을 빼앗으면 그 자리에서 즉시 3~4번의 빠른 패스로 역습을 시작한다."
     }
   },
-  "summary": "양쪽 풀백이 극단적으로 전진해 사실상 5선 공격 대형(3-2-5)을 만드는 것이 핵심. 볼을 잃으면 즉시 강하게 압박해 되찾는다."
+  "summary": "양쪽 풀백이 극단적으로 전진해 사실상 3-2-5 공격 대형을 만드는 것이 핵심. 볼을 잃으면 즉시 강하게 압박해 되찾는다."
 }

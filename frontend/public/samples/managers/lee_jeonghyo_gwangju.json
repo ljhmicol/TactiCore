@@ -11,14 +11,14 @@
   "formation": "4-4-2",
   "players": [
     { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
-    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
+    { "id": "p5", "name": "LB", "number": 3, "role": "LB" },
     { "id": "p3", "name": "CB", "number": 4, "role": "CB" },
     { "id": "p4", "name": "CB", "number": 5, "role": "CB" },
-    { "id": "p5", "name": "LB", "number": 3, "role": "LB" },
-    { "id": "p6", "name": "RM", "number": 7, "role": "RM" },
+    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
+    { "id": "p9", "name": "LM", "number": 11, "role": "LM" },
     { "id": "p7", "name": "CM", "number": 6, "role": "CM" },
     { "id": "p8", "name": "CM", "number": 8, "role": "CM" },
-    { "id": "p9", "name": "LM", "number": 11, "role": "LM" },
+    { "id": "p6", "name": "RM", "number": 7, "role": "RM" },
     { "id": "p10", "name": "ST", "number": 9, "role": "ST" },
     { "id": "p11", "name": "ST", "number": 10, "role": "ST" }
   ],
@@ -26,51 +26,65 @@
     "base": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 92 },
-        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p5", "x": 16, "y": 74 },
         { "playerId": "p3", "x": 38, "y": 78 },
         { "playerId": "p4", "x": 62, "y": 78 },
-        { "playerId": "p5", "x": 16, "y": 74 },
-        { "playerId": "p6", "x": 84, "y": 52 },
+        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p9", "x": 16, "y": 52 },
         { "playerId": "p7", "x": 38, "y": 56 },
         { "playerId": "p8", "x": 62, "y": 56 },
-        { "playerId": "p9", "x": 16, "y": 52 },
+        { "playerId": "p6", "x": 84, "y": 52 },
         { "playerId": "p10", "x": 38, "y": 26 },
         { "playerId": "p11", "x": 62, "y": 26 }
       ],
-      "comment": "기본 대형은 4-4-2. 능동적·주도적인 축구(Pro-Active Football)를 표방하며 강한 압박과 유기적인 패스 플레이를 지향한다."
+      "annotations": [
+        { "id": "gj-base-lm", "type": "run", "from": { "x": 16, "y": 52 }, "to": { "x": 8, "y": 42 } }
+      ],
+      "comment": "기본 대형은 4-4-2. 두 개의 라인(백4·미드4)이 간격을 좁게 유지해 중앙을 지키는 것이 출발점이다. 능동적·주도적인 축구(Pro-Active Football)를 표방하며, 양쪽 미드(7번·11번)는 국면에 따라 윙처럼 넓게 쓰이는 유연한 역할을 맡는다."
     },
     "attack": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 86 },
-        { "playerId": "p2", "x": 84, "y": 66 },
+        { "playerId": "p5", "x": 16, "y": 66 },
         { "playerId": "p3", "x": 38, "y": 72 },
         { "playerId": "p4", "x": 62, "y": 72 },
-        { "playerId": "p5", "x": 16, "y": 66 },
-        { "playerId": "p6", "x": 94, "y": 40 },
+        { "playerId": "p2", "x": 84, "y": 66 },
+        { "playerId": "p9", "x": 6, "y": 40 },
         { "playerId": "p7", "x": 32, "y": 34 },
         { "playerId": "p8", "x": 68, "y": 34 },
-        { "playerId": "p9", "x": 6, "y": 40 },
+        { "playerId": "p6", "x": 94, "y": 40 },
         { "playerId": "p10", "x": 38, "y": 16 },
         { "playerId": "p11", "x": 62, "y": 16 }
       ],
-      "comment": "양쪽 윙어(미드필더)가 터치라인 끝까지 넓게 서서 하프스페이스를 비워두고, 중앙 미드필더 2명이 그 하프스페이스로 끊임없이 침투해 수적 우위를 만든다."
+      "annotations": [
+        { "id": "gj-atk-lcm", "type": "run", "from": { "x": 38, "y": 56 }, "to": { "x": 32, "y": 34 } },
+        { "id": "gj-atk-rcm", "type": "run", "from": { "x": 62, "y": 56 }, "to": { "x": 68, "y": 34 } },
+        { "id": "gj-atk-lm", "type": "run", "from": { "x": 16, "y": 52 }, "to": { "x": 6, "y": 40 } },
+        { "id": "gj-atk-p1", "type": "pass", "from": { "x": 62, "y": 72 }, "to": { "x": 67, "y": 38 } }
+      ],
+      "comment": "공격 시 양쪽 미드(7번·11번)가 터치라인 끝까지 벌려 상대 백라인을 좌우로 늘리고(스트레치), 그 사이로 중앙 미드 2명(6번·8번)이 하프스페이스로 침투해 수적 우위를 만든다. 풀백(2번·3번)은 미드라인 높이까지 올라가 2선 빌드업을 돕고, 최전방 2톱(9번·10번)은 백라인을 전방에 묶어 둔다. 센터백(5번)의 전진 패스가 침투하는 8번의 발에 연결되는 것이 대표적인 득점 루트다."
     },
     "defense": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 95 },
-        { "playerId": "p2", "x": 84, "y": 80 },
+        { "playerId": "p5", "x": 16, "y": 80 },
         { "playerId": "p3", "x": 38, "y": 82 },
         { "playerId": "p4", "x": 62, "y": 82 },
-        { "playerId": "p5", "x": 16, "y": 80 },
-        { "playerId": "p6", "x": 80, "y": 60 },
+        { "playerId": "p2", "x": 84, "y": 80 },
+        { "playerId": "p9", "x": 20, "y": 60 },
         { "playerId": "p7", "x": 38, "y": 64 },
         { "playerId": "p8", "x": 62, "y": 64 },
-        { "playerId": "p9", "x": 20, "y": 60 },
+        { "playerId": "p6", "x": 80, "y": 60 },
         { "playerId": "p10", "x": 40, "y": 44 },
         { "playerId": "p11", "x": 60, "y": 44 }
       ],
-      "comment": "최전방 2명이 상대 센터백에게 1차 압박을 걸어 측면으로 유도한 뒤, 볼이 넘어가는 순간 그쪽 라인 전체가 즉시 달라붙어 압박한다."
+      "annotations": [
+        { "id": "gj-def-st1", "type": "run", "from": { "x": 40, "y": 44 }, "to": { "x": 36, "y": 34 } },
+        { "id": "gj-def-st2", "type": "run", "from": { "x": 60, "y": 44 }, "to": { "x": 64, "y": 34 } },
+        { "id": "gj-def-rm", "type": "run", "from": { "x": 80, "y": 60 }, "to": { "x": 74, "y": 50 } }
+      ],
+      "comment": "수비 시 최전방 2톱(9번·10번)이 상대 센터백 2명에게 각각 1차 압박을 걸어 패스 코스를 한쪽으로 유도한다. 볼이 쏠린 쪽의 미드와 풀백이 3중으로 좁혀 들어가고(볼 쪽 윙의 슬라이드), 반대쪽은 4-4-2 블록을 유지한 채 중앙으로 밀려 들어온다. 압박 각도를 통째로 움직이는 '블록 압박'이 이 팀의 수비 정체성이다."
     }
   },
-  "summary": "하프스페이스를 비워두고 중앙 미드필더가 침투하는 '유기적 위치 플레이'와, 센터백을 측면으로 유도해 압박하는 수비 루트가 핵심이다. 2022년 부임해 K리그2 우승·K리그1 승격, 이듬해 3위를 이끈 시절의 스타일."
+  "summary": "하프스페이스를 비워뒀다가 중앙 미드 2명이 침투하는 '유기적 위치 플레이'와, 2톱의 유도 압박에서 시작되는 블록 수비가 핵심이다. 2022년 부임해 K리그2 우승·K리그1 승격, 이듬해 3위를 이끈 시절의 스타일."
 }

@@ -11,66 +11,81 @@
   "formation": "4-3-3",
   "players": [
     { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
-    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
+    { "id": "p5", "name": "LB", "number": 3, "role": "LB" },
     { "id": "p3", "name": "CB", "number": 4, "role": "CB" },
     { "id": "p4", "name": "CB", "number": 5, "role": "CB" },
-    { "id": "p5", "name": "LB", "number": 3, "role": "LB" },
+    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
     { "id": "p6", "name": "DM", "number": 6, "role": "DM" },
     { "id": "p7", "name": "CM", "number": 8, "role": "CM" },
     { "id": "p8", "name": "CM", "number": 14, "role": "CM" },
-    { "id": "p9", "name": "RW", "number": 7, "role": "RW" },
     { "id": "p10", "name": "LW", "number": 11, "role": "LW" },
-    { "id": "p11", "name": "ST", "number": 9, "role": "ST" }
+    { "id": "p11", "name": "ST", "number": 9, "role": "ST" },
+    { "id": "p9", "name": "RW", "number": 7, "role": "RW" }
   ],
   "phases": {
     "base": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 92 },
-        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p5", "x": 16, "y": 74 },
         { "playerId": "p3", "x": 38, "y": 78 },
         { "playerId": "p4", "x": 62, "y": 78 },
-        { "playerId": "p5", "x": 16, "y": 74 },
+        { "playerId": "p2", "x": 84, "y": 74 },
         { "playerId": "p6", "x": 50, "y": 62 },
         { "playerId": "p7", "x": 32, "y": 52 },
         { "playerId": "p8", "x": 68, "y": 52 },
-        { "playerId": "p9", "x": 84, "y": 30 },
         { "playerId": "p10", "x": 16, "y": 30 },
-        { "playerId": "p11", "x": 50, "y": 22 }
+        { "playerId": "p11", "x": 50, "y": 22 },
+        { "playerId": "p9", "x": 84, "y": 30 }
       ],
-      "comment": "수원 부임 후 기본 대형은 4-3-3. 유기적인 포지셔닝으로 전술적 완성도를 끌어올린다."
+      "annotations": [
+        { "id": "sw-base-dm", "type": "run", "from": { "x": 50, "y": 62 }, "to": { "x": 50, "y": 74 } }
+      ],
+      "comment": "수원 부임 후 기본 대형은 4-3-3. 수비형 미드필더(6번)가 백4 앞을 홀딩하고, 양 인사이드 미드(8번·14번)가 하프스페이스를 오르내리며 공격을 설계한다. 양 윙(7번·11번)의 폭 활용이 공격의 시작점이다."
     },
     "attack": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 88 },
-        { "playerId": "p2", "x": 88, "y": 60 },
-        { "playerId": "p3", "x": 38, "y": 74 },
-        { "playerId": "p4", "x": 62, "y": 74 },
-        { "playerId": "p5", "x": 12, "y": 60 },
-        { "playerId": "p6", "x": 50, "y": 56 },
-        { "playerId": "p7", "x": 34, "y": 42 },
-        { "playerId": "p8", "x": 66, "y": 42 },
-        { "playerId": "p9", "x": 82, "y": 22 },
+        { "playerId": "p5", "x": 12, "y": 58 },
+        { "playerId": "p3", "x": 28, "y": 76 },
+        { "playerId": "p4", "x": 72, "y": 76 },
+        { "playerId": "p2", "x": 88, "y": 58 },
+        { "playerId": "p6", "x": 50, "y": 78 },
+        { "playerId": "p7", "x": 34, "y": 44 },
+        { "playerId": "p8", "x": 66, "y": 44 },
         { "playerId": "p10", "x": 18, "y": 22 },
-        { "playerId": "p11", "x": 50, "y": 14 }
+        { "playerId": "p11", "x": 50, "y": 14 },
+        { "playerId": "p9", "x": 82, "y": 22 }
       ],
-      "comment": "빠른 전환을 중심으로 측면 활용과 중앙 침투를 병행하는 입체적 공격을 시도한다. 풀백이 오버래핑하며 폭을 넓힌다."
+      "annotations": [
+        { "id": "sw-atk-dm", "type": "run", "from": { "x": 50, "y": 62 }, "to": { "x": 50, "y": 78 } },
+        { "id": "sw-atk-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 88, "y": 58 } },
+        { "id": "sw-atk-lb", "type": "run", "from": { "x": 16, "y": 74 }, "to": { "x": 12, "y": 58 } },
+        { "id": "sw-atk-p1", "type": "pass", "from": { "x": 28, "y": 76 }, "to": { "x": 34, "y": 46 } },
+        { "id": "sw-atk-p2", "type": "pass", "from": { "x": 34, "y": 44 }, "to": { "x": 20, "y": 26 } }
+      ],
+      "comment": "빌드업 시 수비형 미드필더(6번)가 내려와 센터백(4번·5번) 사이에 들어가 3백을 만든다. 센터백 2명이 넓게 벌려 좌우로 볼을 돌리는 동안, 풀백(2번·3번)은 미드필더 라인까지 올라가 빌드업을 돕고 인사이드 미드(8번·14번)는 하프스페이스에서 전진 패스를 받는다. 여기서 윙(7번·11번) 뒤 공간으로 스루 패스가 연결되며 9번과 함께 3방향으로 골문을 노린다 — 광주 시절의 '주도적 축구'를 3백 빌드업으로 구현한 형태."
     },
     "defense": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 95 },
-        { "playerId": "p2", "x": 84, "y": 78 },
+        { "playerId": "p5", "x": 16, "y": 78 },
         { "playerId": "p3", "x": 38, "y": 80 },
         { "playerId": "p4", "x": 62, "y": 80 },
-        { "playerId": "p5", "x": 16, "y": 78 },
+        { "playerId": "p2", "x": 84, "y": 78 },
         { "playerId": "p6", "x": 40, "y": 62 },
         { "playerId": "p7", "x": 60, "y": 62 },
         { "playerId": "p8", "x": 20, "y": 42 },
-        { "playerId": "p9", "x": 80, "y": 40 },
         { "playerId": "p10", "x": 38, "y": 34 },
-        { "playerId": "p11", "x": 62, "y": 34 }
+        { "playerId": "p11", "x": 62, "y": 34 },
+        { "playerId": "p9", "x": 80, "y": 40 }
       ],
-      "comment": "비보유 시 4-2-4 형태로 전환해 미드필더 2명만 남기고 나머지 4명을 전방에 배치, 상대 빌드업을 강하게 압박한다."
+      "annotations": [
+        { "id": "sw-def-lw", "type": "run", "from": { "x": 38, "y": 34 }, "to": { "x": 30, "y": 24 } },
+        { "id": "sw-def-st", "type": "run", "from": { "x": 62, "y": 34 }, "to": { "x": 58, "y": 25 } },
+        { "id": "sw-def-mid", "type": "run", "from": { "x": 40, "y": 62 }, "to": { "x": 34, "y": 52 } }
+      ],
+      "comment": "비보유 시 4-2-4로 전환한다. 중원에는 수비형 미드 2명(6번·8번)만 남기고, 윙(7번·11번)·톱(9번)에 전방으로 올라간 인사이드 미드(14번)까지 4명이 상대 빌드업 라인 앞까지 밀어 올려 1차 패스부터 강하게 압박한다. 볼이 뒤로 돌아가면 4-4-2로 회복해 블록을 낮추는 유연함도 함께 쓴다."
     }
   },
-  "summary": "광주 시절보다 더 공격적인 4-2-4 압박 대형이 특징. 빠른 전환과 측면·중앙을 병행하는 입체적 공격으로 이어간다."
+  "summary": "광주 시절보다 더 공격적인 4-2-4 전방 압박이 특징. 빌드업에서는 6번의 하강으로 3백을 만들어 안정적으로 볼을 돌리고, 전환 순간 측면·중앙을 병행하는 입체적 공격으로 이어간다."
 }

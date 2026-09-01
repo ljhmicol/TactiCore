@@ -11,66 +11,80 @@
   "formation": "4-3-3",
   "players": [
     { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
-    { "id": "p2", "name": "RB", "number": 66, "role": "RB" },
+    { "id": "p5", "name": "LB", "number": 26, "role": "LB" },
     { "id": "p3", "name": "CB", "number": 4, "role": "CB" },
     { "id": "p4", "name": "CB", "number": 5, "role": "CB" },
-    { "id": "p5", "name": "LB", "number": 26, "role": "LB" },
+    { "id": "p2", "name": "RB", "number": 66, "role": "RB" },
     { "id": "p6", "name": "DM", "number": 3, "role": "DM" },
     { "id": "p7", "name": "CM", "number": 6, "role": "CM" },
     { "id": "p8", "name": "CM", "number": 8, "role": "CM" },
-    { "id": "p9", "name": "RW", "number": 11, "role": "RW" },
     { "id": "p10", "name": "LW", "number": 20, "role": "LW" },
-    { "id": "p11", "name": "ST", "number": 9, "role": "ST" }
+    { "id": "p11", "name": "ST", "number": 9, "role": "ST" },
+    { "id": "p9", "name": "RW", "number": 11, "role": "RW" }
   ],
   "phases": {
     "base": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 92 },
-        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p5", "x": 16, "y": 74 },
         { "playerId": "p3", "x": 38, "y": 78 },
         { "playerId": "p4", "x": 62, "y": 78 },
-        { "playerId": "p5", "x": 16, "y": 74 },
+        { "playerId": "p2", "x": 84, "y": 74 },
         { "playerId": "p6", "x": 50, "y": 62 },
         { "playerId": "p7", "x": 32, "y": 52 },
         { "playerId": "p8", "x": 68, "y": 52 },
-        { "playerId": "p9", "x": 84, "y": 30 },
         { "playerId": "p10", "x": 16, "y": 30 },
-        { "playerId": "p11", "x": 50, "y": 22 }
+        { "playerId": "p11", "x": 50, "y": 22 },
+        { "playerId": "p9", "x": 84, "y": 30 }
       ],
-      "comment": "'헤비메탈 축구'의 기본 대형 4-3-3. 전방 3명의 압박 트리거로 시작하는 게겐프레싱이 핵심이다."
+      "annotations": [
+        { "id": "klo-base-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 88, "y": 60 } }
+      ],
+      "comment": "'헤비메탈 축구'의 기본 대형 4-3-3. 수비형 미드(3번)가 백4 앞을 지키고, 인사이드 미드 2명(6번·8번)이 하프스페이스를 오르내리며 전환 준비를 한다. 공격의 스위치는 언제나 전방 3명(9번·11번·20번)의 압박 트리거다."
     },
     "attack": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 86 },
-        { "playerId": "p2", "x": 88, "y": 62 },
+        { "playerId": "p5", "x": 12, "y": 62 },
         { "playerId": "p3", "x": 38, "y": 72 },
         { "playerId": "p4", "x": 62, "y": 72 },
-        { "playerId": "p5", "x": 12, "y": 62 },
+        { "playerId": "p2", "x": 88, "y": 62 },
         { "playerId": "p6", "x": 50, "y": 54 },
         { "playerId": "p7", "x": 30, "y": 44 },
         { "playerId": "p8", "x": 70, "y": 44 },
-        { "playerId": "p9", "x": 88, "y": 20 },
         { "playerId": "p10", "x": 12, "y": 20 },
-        { "playerId": "p11", "x": 50, "y": 12 }
+        { "playerId": "p11", "x": 50, "y": 12 },
+        { "playerId": "p9", "x": 88, "y": 20 }
       ],
-      "comment": "라인을 극단적으로 높이고 양쪽 풀백이 윙어처럼 오버래핑한다. 빠른 템포의 수직 패스와 측면 크로스로 직선적으로 골문을 노린다."
+      "annotations": [
+        { "id": "klo-atk-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 88, "y": 62 } },
+        { "id": "klo-atk-lb", "type": "run", "from": { "x": 16, "y": 74 }, "to": { "x": 12, "y": 62 } },
+        { "id": "klo-atk-p1", "type": "pass", "from": { "x": 68, "y": 52 }, "to": { "x": 86, "y": 24 } },
+        { "id": "klo-atk-p2", "type": "pass", "from": { "x": 88, "y": 62 }, "to": { "x": 58, "y": 15 } }
+      ],
+      "comment": "팀 전체를 극단적으로 높이 올린 뒤 양 풀백(66번·26번)이 윙처럼 오버래핑한다. 같은 측면에 윙이 함께 서면서 상대 풀백을 상대로 2:1을 만들고, 인사이드 미드(6번·8번)의 수직 패스가 윙과 풀백의 '달리는 발'에 꽂힌다. 종료는 크로스(66번→9번) 또는 백라인 뒤 침투 패스 — 골문을 정면으로 노리는 직선 축구."
     },
     "defense": {
       "positions": [
         { "playerId": "p1", "x": 50, "y": 94 },
-        { "playerId": "p2", "x": 84, "y": 80 },
+        { "playerId": "p5", "x": 16, "y": 80 },
         { "playerId": "p3", "x": 38, "y": 82 },
         { "playerId": "p4", "x": 62, "y": 82 },
-        { "playerId": "p5", "x": 16, "y": 80 },
+        { "playerId": "p2", "x": 84, "y": 80 },
         { "playerId": "p6", "x": 50, "y": 68 },
         { "playerId": "p7", "x": 36, "y": 58 },
         { "playerId": "p8", "x": 64, "y": 58 },
-        { "playerId": "p9", "x": 80, "y": 46 },
         { "playerId": "p10", "x": 20, "y": 46 },
-        { "playerId": "p11", "x": 50, "y": 38 }
+        { "playerId": "p11", "x": 50, "y": 38 },
+        { "playerId": "p9", "x": 80, "y": 46 }
       ],
-      "comment": "'게겐프레싱' — 볼을 뺏기는 즉시(5초 룰) 전방 3명부터 곧바로 재압박해 상대가 정돈된 역습을 하기 전에 볼을 다시 빼앗는다."
+      "annotations": [
+        { "id": "klo-def-st", "type": "run", "from": { "x": 50, "y": 38 }, "to": { "x": 44, "y": 28 } },
+        { "id": "klo-def-lw", "type": "run", "from": { "x": 20, "y": 46 }, "to": { "x": 33, "y": 37 } },
+        { "id": "klo-def-rw", "type": "run", "from": { "x": 80, "y": 46 }, "to": { "x": 67, "y": 37 } }
+      ],
+      "comment": "'게겐프레싱' — 볼을 잃는 즉시(5초 룰) 전방 3명(9번·11번·20번)이 볼 쪽으로 좁혀 들어가 압박 포켓을 만들고, 인사이드 미드(6번·8번)가 그 뒤를 막는다. 상대가 뒤로 돌리면 전원이 함께 전진해 다시 압박하고, 회복에 실패했을 때만 백4가 내려앉는다. 공을 뺏기는 순간이 최고의 플레이메이커다."
     }
   },
-  "summary": "공을 소유했을 때는 극단적으로 빠른 수직 축구, 잃었을 때는 즉각적인 게겐프레싱 — '공을 뺏기는 순간이 최고의 플레이메이커'라는 철학을 대형으로 표현한 프리셋이다. 클롭은 2025년부터 레드불 Head of Global Soccer로 현장을 떠났지만, 이 스타일은 여전히 널리 회자된다."
+  "summary": "공을 소유했을 때는 극단적으로 빠른 수직 축구, 잃었을 때는 즉각적인 게겐프레싱. 클롭은 2025년부터 레드불 Head of Global Soccer로 현장을 떠났지만, 이 스타일은 여전히 널리 회자된다."
 }
