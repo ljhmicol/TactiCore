@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "match": {
+    "matchName": "감독 스타일 프리셋 — 루이스 엔리케 (파리 생제르맹)",
+    "homeTeam": "파리 생제르맹",
+    "awayTeam": "상대팀",
+    "matchDate": "2026-09-01",
+    "competition": "감독 스타일 프리셋",
+    "analyzedTeam": "home"
+  },
+  "formation": "4-3-3",
+  "players": [
+    { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
+    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
+    { "id": "p3", "name": "CB", "number": 4, "role": "CB" },
+    { "id": "p4", "name": "CB", "number": 3, "role": "CB" },
+    { "id": "p5", "name": "LB", "number": 25, "role": "LB" },
+    { "id": "p6", "name": "DM", "number": 5, "role": "DM" },
+    { "id": "p7", "name": "CM", "number": 17, "role": "CM" },
+    { "id": "p8", "name": "CM", "number": 6, "role": "CM" },
+    { "id": "p9", "name": "RW", "number": 7, "role": "RW" },
+    { "id": "p10", "name": "LW", "number": 10, "role": "LW" },
+    { "id": "p11", "name": "ST", "number": 9, "role": "ST" }
+  ],
+  "phases": {
+    "base": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 92 },
+        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p3", "x": 38, "y": 78 },
+        { "playerId": "p4", "x": 62, "y": 78 },
+        { "playerId": "p5", "x": 16, "y": 74 },
+        { "playerId": "p6", "x": 50, "y": 62 },
+        { "playerId": "p7", "x": 32, "y": 52 },
+        { "playerId": "p8", "x": 68, "y": 52 },
+        { "playerId": "p9", "x": 84, "y": 30 },
+        { "playerId": "p10", "x": 16, "y": 30 },
+        { "playerId": "p11", "x": 50, "y": 22 }
+      ],
+      "comment": "기본 대형은 4-3-3. 점유율을 바탕으로 중앙 장악과 측면 풀백의 공격 가담을 노린다."
+    },
+    "attack": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 88 },
+        { "playerId": "p2", "x": 92, "y": 26 },
+        { "playerId": "p3", "x": 38, "y": 78 },
+        { "playerId": "p4", "x": 62, "y": 78 },
+        { "playerId": "p5", "x": 8, "y": 30 },
+        { "playerId": "p6", "x": 50, "y": 66 },
+        { "playerId": "p7", "x": 50, "y": 46 },
+        { "playerId": "p8", "x": 62, "y": 58 },
+        { "playerId": "p9", "x": 78, "y": 16 },
+        { "playerId": "p10", "x": 22, "y": 16 },
+        { "playerId": "p11", "x": 50, "y": 10 }
+      ],
+      "comment": "양쪽 풀백이 윙어 자리까지 극단적으로 전진하고, 미드필더 한 명이 그 공백을 메우며 앞으로 전진해 사실상 3-2-5 형태를 만든다. 전방 3명이 상대 백4를 고정시키는 사이 중원에서 수적 우위를 노린다."
+    },
+    "defense": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 96 },
+        { "playerId": "p2", "x": 84, "y": 66 },
+        { "playerId": "p3", "x": 38, "y": 70 },
+        { "playerId": "p4", "x": 62, "y": 70 },
+        { "playerId": "p5", "x": 16, "y": 66 },
+        { "playerId": "p6", "x": 50, "y": 56 },
+        { "playerId": "p7", "x": 30, "y": 46 },
+        { "playerId": "p8", "x": 70, "y": 46 },
+        { "playerId": "p9", "x": 80, "y": 34 },
+        { "playerId": "p10", "x": 20, "y": 34 },
+        { "playerId": "p11", "x": 50, "y": 26 }
+      ],
+      "comment": "비보유 시 4-1-4-1로 전환해 공격적으로 전방 압박(pressing after loss)을 가하며 볼을 다시 뺏은 뒤 곧바로 재전개한다."
+    }
+  },
+  "summary": "양쪽 풀백이 극단적으로 전진해 사실상 5선 공격 대형(3-2-5)을 만드는 것이 핵심. 볼을 잃으면 즉시 강하게 압박해 되찾는다."
+}

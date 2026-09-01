@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "match": {
+    "matchName": "감독 스타일 프리셋 — 이정효 (수원삼성 시절)",
+    "homeTeam": "수원삼성 블루윙즈",
+    "awayTeam": "상대팀",
+    "matchDate": "2026-09-01",
+    "competition": "감독 스타일 프리셋",
+    "analyzedTeam": "home"
+  },
+  "formation": "4-3-3",
+  "players": [
+    { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
+    { "id": "p2", "name": "RB", "number": 2, "role": "RB" },
+    { "id": "p3", "name": "CB", "number": 4, "role": "CB" },
+    { "id": "p4", "name": "CB", "number": 5, "role": "CB" },
+    { "id": "p5", "name": "LB", "number": 3, "role": "LB" },
+    { "id": "p6", "name": "DM", "number": 6, "role": "DM" },
+    { "id": "p7", "name": "CM", "number": 8, "role": "CM" },
+    { "id": "p8", "name": "CM", "number": 14, "role": "CM" },
+    { "id": "p9", "name": "RW", "number": 7, "role": "RW" },
+    { "id": "p10", "name": "LW", "number": 11, "role": "LW" },
+    { "id": "p11", "name": "ST", "number": 9, "role": "ST" }
+  ],
+  "phases": {
+    "base": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 92 },
+        { "playerId": "p2", "x": 84, "y": 74 },
+        { "playerId": "p3", "x": 38, "y": 78 },
+        { "playerId": "p4", "x": 62, "y": 78 },
+        { "playerId": "p5", "x": 16, "y": 74 },
+        { "playerId": "p6", "x": 50, "y": 62 },
+        { "playerId": "p7", "x": 32, "y": 52 },
+        { "playerId": "p8", "x": 68, "y": 52 },
+        { "playerId": "p9", "x": 84, "y": 30 },
+        { "playerId": "p10", "x": 16, "y": 30 },
+        { "playerId": "p11", "x": 50, "y": 22 }
+      ],
+      "comment": "수원 부임 후 기본 대형은 4-3-3. 유기적인 포지셔닝으로 전술적 완성도를 끌어올린다."
+    },
+    "attack": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 88 },
+        { "playerId": "p2", "x": 88, "y": 60 },
+        { "playerId": "p3", "x": 38, "y": 74 },
+        { "playerId": "p4", "x": 62, "y": 74 },
+        { "playerId": "p5", "x": 12, "y": 60 },
+        { "playerId": "p6", "x": 50, "y": 56 },
+        { "playerId": "p7", "x": 34, "y": 42 },
+        { "playerId": "p8", "x": 66, "y": 42 },
+        { "playerId": "p9", "x": 82, "y": 22 },
+        { "playerId": "p10", "x": 18, "y": 22 },
+        { "playerId": "p11", "x": 50, "y": 14 }
+      ],
+      "comment": "빠른 전환을 중심으로 측면 활용과 중앙 침투를 병행하는 입체적 공격을 시도한다. 풀백이 오버래핑하며 폭을 넓힌다."
+    },
+    "defense": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 95 },
+        { "playerId": "p2", "x": 84, "y": 78 },
+        { "playerId": "p3", "x": 38, "y": 80 },
+        { "playerId": "p4", "x": 62, "y": 80 },
+        { "playerId": "p5", "x": 16, "y": 78 },
+        { "playerId": "p6", "x": 40, "y": 62 },
+        { "playerId": "p7", "x": 60, "y": 62 },
+        { "playerId": "p8", "x": 20, "y": 42 },
+        { "playerId": "p9", "x": 80, "y": 40 },
+        { "playerId": "p10", "x": 38, "y": 34 },
+        { "playerId": "p11", "x": 62, "y": 34 }
+      ],
+      "comment": "비보유 시 4-2-4 형태로 전환해 미드필더 2명만 남기고 나머지 4명을 전방에 배치, 상대 빌드업을 강하게 압박한다."
+    }
+  },
+  "summary": "광주 시절보다 더 공격적인 4-2-4 압박 대형이 특징. 빠른 전환과 측면·중앙을 병행하는 입체적 공격으로 이어간다."
+}

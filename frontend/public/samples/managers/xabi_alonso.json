@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "match": {
+    "matchName": "감독 스타일 프리셋 — 사비 알론소 (바이어 레버쿠젠 시절)",
+    "homeTeam": "바이어 레버쿠젠",
+    "awayTeam": "상대팀",
+    "matchDate": "2026-09-01",
+    "competition": "감독 스타일 프리셋 (레버쿠젠 무패 우승 시절)",
+    "analyzedTeam": "home"
+  },
+  "formation": "3-4-2-1",
+  "players": [
+    { "id": "p1", "name": "GK", "number": 1, "role": "GK" },
+    { "id": "p2", "name": "CB", "number": 4, "role": "CB" },
+    { "id": "p3", "name": "CB", "number": 15, "role": "CB" },
+    { "id": "p4", "name": "CB", "number": 6, "role": "CB" },
+    { "id": "p5", "name": "RWB", "number": 2, "role": "RWB" },
+    { "id": "p6", "name": "LWB", "number": 20, "role": "LWB" },
+    { "id": "p7", "name": "DM", "number": 34, "role": "DM" },
+    { "id": "p8", "name": "DM", "number": 10, "role": "DM" },
+    { "id": "p9", "name": "AM", "number": 7, "role": "AM" },
+    { "id": "p10", "name": "AM", "number": 29, "role": "AM" },
+    { "id": "p11", "name": "ST", "number": 9, "role": "ST" }
+  ],
+  "phases": {
+    "base": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 92 },
+        { "playerId": "p2", "x": 30, "y": 78 },
+        { "playerId": "p3", "x": 50, "y": 82 },
+        { "playerId": "p4", "x": 70, "y": 78 },
+        { "playerId": "p5", "x": 10, "y": 62 },
+        { "playerId": "p6", "x": 90, "y": 62 },
+        { "playerId": "p7", "x": 40, "y": 64 },
+        { "playerId": "p8", "x": 60, "y": 64 },
+        { "playerId": "p9", "x": 35, "y": 40 },
+        { "playerId": "p10", "x": 65, "y": 40 },
+        { "playerId": "p11", "x": 50, "y": 20 }
+      ],
+      "comment": "기본 대형은 3-4-2-1(백3 + 윙백 + 더블피벗 + 2명의 그림자 공격수). 백3와 윙백의 폭 조절이 이 시스템의 핵심이다."
+    },
+    "attack": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 88 },
+        { "playerId": "p2", "x": 25, "y": 80 },
+        { "playerId": "p3", "x": 50, "y": 84 },
+        { "playerId": "p4", "x": 75, "y": 80 },
+        { "playerId": "p5", "x": 8, "y": 30 },
+        { "playerId": "p6", "x": 92, "y": 30 },
+        { "playerId": "p7", "x": 40, "y": 62 },
+        { "playerId": "p8", "x": 60, "y": 62 },
+        { "playerId": "p9", "x": 35, "y": 20 },
+        { "playerId": "p10", "x": 65, "y": 20 },
+        { "playerId": "p11", "x": 50, "y": 12 }
+      ],
+      "comment": "빌드업 시 백3가 터치라인 가까이까지 넓게 벌리고 더블 피벗이 그 앞에 내려와 상대 1차 압박을 무력화하는 '헥사곤' 구조를 만든다. 이 틈에 윙백이 극단적으로 전진해 사실상 3-2-5 형태의 공격 대형이 된다."
+    },
+    "defense": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 95 },
+        { "playerId": "p2", "x": 25, "y": 84 },
+        { "playerId": "p3", "x": 50, "y": 88 },
+        { "playerId": "p4", "x": 75, "y": 84 },
+        { "playerId": "p5", "x": 10, "y": 76 },
+        { "playerId": "p6", "x": 90, "y": 76 },
+        { "playerId": "p7", "x": 40, "y": 66 },
+        { "playerId": "p8", "x": 60, "y": 66 },
+        { "playerId": "p9", "x": 35, "y": 50 },
+        { "playerId": "p10", "x": 65, "y": 50 },
+        { "playerId": "p11", "x": 50, "y": 46 }
+      ],
+      "comment": "윙백이 내려와 백5를 형성해 측면 크로스 공간을 차단한다. 더블 피벗이 그 앞을 지켜 중앙 침투를 막는다."
+    }
+  },
+  "summary": "백3와 윙백의 위치가 국면마다 극단적으로 바뀌는 것이 특징 — 공격 시 3-2-5, 수비 시 백5로 완전히 다른 모양이 된다. 2023/24시즌 분데스리가 무패 우승을 이끈 대형이다."
+}
