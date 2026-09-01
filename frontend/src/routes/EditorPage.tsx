@@ -1,25 +1,35 @@
 import { Link } from 'react-router-dom'
 
 import { CommentPanel } from '@/components/editor/CommentPanel'
+import { JsonIO } from '@/components/editor/JsonIO'
+import { LayerToggleChips } from '@/components/editor/LayerToggleChips'
 import { MatchInfoForm } from '@/components/editor/MatchInfoForm'
 import { PhaseTabs } from '@/components/editor/PhaseTabs'
 import { PlayerForm } from '@/components/editor/PlayerForm'
+import { ExportControls } from '@/components/export/ExportControls'
+import { ChannelGrid } from '@/components/pitch/ChannelGrid'
+import { CompactnessBox } from '@/components/pitch/CompactnessBox'
 import { GhostLayer } from '@/components/pitch/GhostLayer'
+import { OpponentNode } from '@/components/pitch/OpponentNode'
+import { OverloadLayer } from '@/components/pitch/OverloadLayer'
 import { Pitch } from '@/components/pitch/Pitch'
 import { PlayerNode } from '@/components/pitch/PlayerNode'
+import { PressingLine } from '@/components/pitch/PressingLine'
 import { Button } from '@/components/ui/button'
 import { useAnalysisStore } from '@/store/analysisStore'
 
 /**
  * / — 편집기. 분석이 없으면 빈 안내, 있으면 피치 + 경기정보/선수 패널을 보여준다.
- * 레이어 토글 칩(5채널/압박라인/오버로드 등)은 Phase 4에서 추가된다.
+ * 레이어 z-순서(2단계 §9): 채널 그리드 → 콤팩트니스 → 압박 라인 → 오버로드 → Ghost → 선수 노드(최상단).
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
   const currentPhase = useAnalysisStore((s) => s.currentPhase)
   const previousPhase = useAnalysisStore((s) => s.previousPhase)
   const ghostAutoVisible = useAnalysisStore((s) => s.ghostAutoVisible)
-  const ghostViewPinned = useAnalysisStore((s) => s.layers.ghostView)
+  const layers = useAnalysisStore((s) => s.layers)
+  const addOpponents = useAnalysisStore((s) => s.addOpponents)
+  const removeOpponents = useAnalysisStore((s) => s.removeOpponents)
 
   if (!analysis) {
     return (
@@ -33,49 +43,80 @@ export function EditorPage() {
   }
 
   const phase = analysis.phases[currentPhase]
-  const showGhost = Boolean(previousPhase) && previousPhase !== currentPhase && (ghostViewPinned || ghostAutoVisible)
+  const showGhost = Boolean(previousPhase) && previousPhase !== currentPhase && (layers.ghostView || ghostAutoVisible)
+  const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
 
   return (
-    <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[minmax(480px,1fr)_400px]">
-      <div className="flex flex-col items-center gap-3">
-        <div className="w-full max-w-md">
-          <PhaseTabs />
+    <div className="flex flex-col gap-4 p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+        <div>
+          <p className="font-semibold text-foreground">
+            {analysis.match.matchName || `${analysis.match.homeTeam} vs ${analysis.match.awayTeam}` || '새 분석'}
+          </p>
+          <p className="text-xs text-muted-foreground">{analysis.match.matchDate}</p>
         </div>
-        <div className="h-[65vh]">
-          <Pitch>
-            {showGhost && previousPhase && (
-              <GhostLayer
-                previousPositions={analysis.phases[previousPhase].positions}
-                currentPositions={phase.positions}
-              />
-            )}
-            {analysis.players.map((player) => {
-              const pos = phase.positions.find((p) => p.playerId === player.id)
-              if (!pos) return null
-              return <PlayerNode key={player.id} player={player} position={pos} />
-            })}
-          </Pitch>
+        <div className="flex flex-wrap items-center gap-3">
+          <ExportControls analysis={analysis} phase={currentPhase} />
+          <JsonIO analysis={analysis} />
         </div>
       </div>
 
-      <div className="space-y-6 overflow-y-auto">
-        <section>
-          <h2 className="mb-2 text-sm font-semibold text-foreground">경기 정보</h2>
-          <MatchInfoForm match={analysis.match} />
-        </section>
-
-        <section>
-          <h2 className="mb-2 text-sm font-semibold text-foreground">선수 ({analysis.players.length})</h2>
-          <div className="space-y-2">
-            {analysis.players.map((player, i) => (
-              <PlayerForm key={player.id} player={player} index={i} />
-            ))}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(480px,1fr)_400px]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-full max-w-md">
+            <PhaseTabs />
           </div>
-        </section>
+          <div className="h-[65vh]">
+            <Pitch>
+              {layers.channelGrid && <ChannelGrid halfSpaces={layers.halfSpaces} />}
+              {layers.compactness && <CompactnessBox positions={phase.positions} />}
+              {layers.pressingLine && (
+                <PressingLine positions={phase.positions} pressingLineY={phase.pressingLineY} />
+              )}
+              {layers.overload && hasOpponent && <OverloadLayer phase={phase} />}
+              {showGhost && previousPhase && (
+                <GhostLayer
+                  previousPositions={analysis.phases[previousPhase].positions}
+                  currentPositions={phase.positions}
+                />
+              )}
+              {phase.opponentPositions?.map((pos, i) => (
+                <OpponentNode key={i} slot={i} position={pos} />
+              ))}
+              {analysis.players.map((player) => {
+                const pos = phase.positions.find((p) => p.playerId === player.id)
+                if (!pos) return null
+                return <PlayerNode key={player.id} player={player} position={pos} />
+              })}
+            </Pitch>
+          </div>
+          <div className="flex w-full max-w-md items-center justify-between gap-3">
+            <LayerToggleChips hasOpponent={hasOpponent} />
+            <Button variant="outline" size="sm" onClick={hasOpponent ? removeOpponents : addOpponents}>
+              {hasOpponent ? '상대팀 제거' : '상대팀 추가'}
+            </Button>
+          </div>
+        </div>
 
-        <section>
-          <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
-        </section>
+        <div className="space-y-6 overflow-y-auto">
+          <section>
+            <h2 className="mb-2 text-sm font-semibold text-foreground">경기 정보</h2>
+            <MatchInfoForm match={analysis.match} />
+          </section>
+
+          <section>
+            <h2 className="mb-2 text-sm font-semibold text-foreground">선수 ({analysis.players.length})</h2>
+            <div className="space-y-2">
+              {analysis.players.map((player, i) => (
+                <PlayerForm key={player.id} player={player} index={i} />
+              ))}
+            </div>
+          </section>
+
+          <section>
+            <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
+          </section>
+        </div>
       </div>
     </div>
   )

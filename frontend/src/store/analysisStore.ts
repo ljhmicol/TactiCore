@@ -56,6 +56,8 @@ interface AnalysisStore {
   setIsMorphing: (v: boolean) => void
   movePlayer: (playerId: string, x: number, y: number) => void // 현재 국면에만 반영
   moveOpponent: (slot: number, x: number, y: number) => void
+  addOpponents: () => void // 현재 국면에 상대팀 11명 기본 배치 추가 (자팀 포메이션을 하프라인 기준 대칭)
+  removeOpponents: () => void
   setComment: (phase: PhaseType, text: string) => void
   setSummary: (text: string) => void
   setMatchInfo: (patch: Partial<MatchInfo>) => void
@@ -137,6 +139,30 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
           [currentPhase]: { ...phase, opponentPositions: opp },
         },
       },
+      isDirty: true,
+    })
+  },
+
+  addOpponents: () => {
+    const { analysis, currentPhase } = get()
+    if (!analysis) return
+    const phase = analysis.phases[currentPhase]
+    // 자팀 포메이션을 하프라인 기준으로 대칭 이동한 좌표를 기본값으로 준다 (y' = 100 - y).
+    const opp = phase.positions.map((p) => ({ x: p.x, y: 100 - p.y }))
+    set({
+      analysis: { ...analysis, phases: { ...analysis.phases, [currentPhase]: { ...phase, opponentPositions: opp } } },
+      isDirty: true,
+    })
+  },
+
+  removeOpponents: () => {
+    const { analysis, currentPhase } = get()
+    if (!analysis) return
+    const phase = analysis.phases[currentPhase]
+    const { opponentPositions: _drop, ...rest } = phase
+    void _drop
+    set({
+      analysis: { ...analysis, phases: { ...analysis.phases, [currentPhase]: rest } },
       isDirty: true,
     })
   },
