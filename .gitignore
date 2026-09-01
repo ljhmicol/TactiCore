@@ -27,3 +27,6 @@ frontend/.vite/
 .idea/
 Thumbs.db
 desktop.ini
+
+# Windows-side dev server logs
+vite-win.*.log
