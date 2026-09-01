@@ -1,19 +1,25 @@
 import { Link } from 'react-router-dom'
 
+import { CommentPanel } from '@/components/editor/CommentPanel'
 import { MatchInfoForm } from '@/components/editor/MatchInfoForm'
+import { PhaseTabs } from '@/components/editor/PhaseTabs'
 import { PlayerForm } from '@/components/editor/PlayerForm'
-import { PlayerNode } from '@/components/pitch/PlayerNode'
+import { GhostLayer } from '@/components/pitch/GhostLayer'
 import { Pitch } from '@/components/pitch/Pitch'
+import { PlayerNode } from '@/components/pitch/PlayerNode'
 import { Button } from '@/components/ui/button'
 import { useAnalysisStore } from '@/store/analysisStore'
 
 /**
  * / — 편집기. 분석이 없으면 빈 안내, 있으면 피치 + 경기정보/선수 패널을 보여준다.
- * 국면 탭·레이어 토글·코멘트 패널은 Phase 3/4에서 추가된다.
+ * 레이어 토글 칩(5채널/압박라인/오버로드 등)은 Phase 4에서 추가된다.
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
   const currentPhase = useAnalysisStore((s) => s.currentPhase)
+  const previousPhase = useAnalysisStore((s) => s.previousPhase)
+  const ghostAutoVisible = useAnalysisStore((s) => s.ghostAutoVisible)
+  const ghostViewPinned = useAnalysisStore((s) => s.layers.ghostView)
 
   if (!analysis) {
     return (
@@ -27,12 +33,22 @@ export function EditorPage() {
   }
 
   const phase = analysis.phases[currentPhase]
+  const showGhost = Boolean(previousPhase) && previousPhase !== currentPhase && (ghostViewPinned || ghostAutoVisible)
 
   return (
     <div className="grid grid-cols-1 gap-6 p-6 lg:grid-cols-[minmax(480px,1fr)_400px]">
-      <div className="flex justify-center">
-        <div className="h-[70vh]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-full max-w-md">
+          <PhaseTabs />
+        </div>
+        <div className="h-[65vh]">
           <Pitch>
+            {showGhost && previousPhase && (
+              <GhostLayer
+                previousPositions={analysis.phases[previousPhase].positions}
+                currentPositions={phase.positions}
+              />
+            )}
             {analysis.players.map((player) => {
               const pos = phase.positions.find((p) => p.playerId === player.id)
               if (!pos) return null
@@ -55,6 +71,10 @@ export function EditorPage() {
               <PlayerForm key={player.id} player={player} index={i} />
             ))}
           </div>
+        </section>
+
+        <section>
+          <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
         </section>
       </div>
     </div>

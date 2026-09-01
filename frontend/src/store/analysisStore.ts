@@ -37,15 +37,22 @@ export function createEmptyAnalysis(formation: string, match: MatchInfo): Analys
   }
 }
 
+/** 국면 전환 애니메이션 사양 (2단계 §8) — GhostLayer의 자동 노출 시간 계산에도 쓴다. */
+export const PHASE_TRANSITION_MS = 600
+const GHOST_AUTO_HIDE_MS = 2000
+
 interface AnalysisStore {
   analysis: Analysis | null
   currentPhase: PhaseType
+  previousPhase: PhaseType | null // Ghost View가 참조하는 "직전 국면"
+  ghostAutoVisible: boolean // 전환 직후 2초간 자동으로 켜지는 Ghost 표시 (레이어 토글과 별개)
   layers: LayerToggles
   isMorphing: boolean
   isDirty: boolean
 
   loadAnalysis: (a: Analysis) => void
   setPhase: (p: PhaseType) => void
+  switchPhase: (p: PhaseType) => void // 국면 탭 클릭 — isMorphing/Ghost 타이밍까지 함께 처리
   setIsMorphing: (v: boolean) => void
   movePlayer: (playerId: string, x: number, y: number) => void // 현재 국면에만 반영
   moveOpponent: (slot: number, x: number, y: number) => void
@@ -66,16 +73,34 @@ const defaultLayers: LayerToggles = {
   ghostView: false,
 }
 
+let morphTimer: ReturnType<typeof setTimeout> | undefined
+let ghostTimer: ReturnType<typeof setTimeout> | undefined
+
 export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   analysis: null,
   currentPhase: 'base',
+  previousPhase: null,
+  ghostAutoVisible: false,
   layers: defaultLayers,
   isMorphing: false,
   isDirty: false,
 
-  loadAnalysis: (a) => set({ analysis: a, currentPhase: 'base', isDirty: false }),
+  loadAnalysis: (a) => set({ analysis: a, currentPhase: 'base', previousPhase: null, isDirty: false }),
 
   setPhase: (p) => set({ currentPhase: p }),
+
+  switchPhase: (next) => {
+    const { currentPhase } = get()
+    if (next === currentPhase) return
+
+    clearTimeout(morphTimer)
+    clearTimeout(ghostTimer)
+
+    set({ previousPhase: currentPhase, currentPhase: next, isMorphing: true, ghostAutoVisible: true })
+
+    morphTimer = setTimeout(() => set({ isMorphing: false }), PHASE_TRANSITION_MS)
+    ghostTimer = setTimeout(() => set({ ghostAutoVisible: false }), GHOST_AUTO_HIDE_MS)
+  },
 
   setIsMorphing: (v) => set({ isMorphing: v }),
 
