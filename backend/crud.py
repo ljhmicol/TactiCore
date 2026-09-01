@@ -30,6 +30,7 @@ def _load(db: Session, analysis_id: int) -> models.Analysis:
         .options(
             selectinload(models.Analysis.players),
             selectinload(models.Analysis.phases).selectinload(models.Phase.positions),
+            selectinload(models.Analysis.phases).selectinload(models.Phase.annotations),
         )
     )
     row = db.execute(stmt).scalar_one_or_none()
@@ -119,6 +120,17 @@ def upsert_analysis(
                     player=None, side="opponent", slot=slot, x=pos.x, y=pos.y
                 )
             )
+        for ann in phase_in.annotations:
+            phase.annotations.append(
+                models.Annotation(
+                    client_id=ann.id,
+                    ann_type=ann.type,
+                    from_x=ann.from_.x,
+                    from_y=ann.from_.y,
+                    to_x=ann.to.x,
+                    to_y=ann.to.y,
+                )
+            )
 
     db.commit()
     return _load(db, row.id)
@@ -152,6 +164,15 @@ def to_analysis_dict(row: models.Analysis) -> dict:
             ),
             "pressing_line_y": phase.pressing_line_y,
             "comment": phase.comment or "",
+            "annotations": [
+                {
+                    "id": a.client_id,
+                    "type": a.ann_type,
+                    "from": {"x": a.from_x, "y": a.from_y},
+                    "to": {"x": a.to_x, "y": a.to_y},
+                }
+                for a in phase.annotations
+            ],
         }
 
     return {

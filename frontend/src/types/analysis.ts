@@ -27,11 +27,23 @@ export interface PlayerPosition extends Point {
   playerId: string
 }
 
+/** 화살표 종류 — 실선=움직임(침투), 점선=패스 (코칭 표기 관례). */
+export type AnnotationType = 'run' | 'pass'
+
+/** 국면별 자유 좌표 화살표(전술 그리기). 선수에게 부착되지 않는 화이트보드 방식. */
+export interface Annotation {
+  id: string // 프론트가 생성 (nanoid)
+  type: AnnotationType
+  from: Point
+  to: Point
+}
+
 export interface PhaseData {
   positions: PlayerPosition[] // 자팀 11명
   opponentPositions?: Point[] // 있으면 11개 전부
   pressingLineY?: number // 없으면 자동 산출
   comment: string
+  annotations: Annotation[] // 없던 구버전 데이터는 빈 배열로 취급
 }
 
 export interface Analysis {
@@ -81,3 +93,6 @@ export interface LayerToggles {
   overload: boolean
   ghostView: boolean
 }
+
+/** 편집기 도구 — select=선수 이동, run/pass=화살표 그리기 (화면 설정) */
+export type DrawTool = 'select' | AnnotationType

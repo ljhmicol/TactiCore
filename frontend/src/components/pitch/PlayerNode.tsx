@@ -24,10 +24,15 @@ const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
  * (ellipse의 cx/cy, text의 x/y)을 직접 animate한다. g의 transform은 SVG
  * 좌표계가 아니라 렌더링된 CSS 픽셀 기준으로 적용되어(이 프로젝트처럼
  * viewBox와 실제 렌더 크기가 다른 경우) 화면 밖으로 어긋난다.
+ *
+ * onTap은 드래그(pan) 없이 짧게 누른 경우에만 발생한다 — 선수 클릭 편집
+ * 다이얼로그(TO-DO 13번)의 입력점. 그리기 모드에서는 DrawOverlay가 입력을
+ * 가로채 여기까지 오지 않는다.
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
   const movePlayer = useAnalysisStore((s) => s.movePlayer)
+  const setEditingPlayer = useAnalysisStore((s) => s.setEditingPlayer)
   const [dragging, setDragging] = useState(false)
   const transition = dragging ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
 
@@ -42,6 +47,7 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
       onPanStart={() => setDragging(true)}
       onPan={handlePan}
       onPanEnd={() => setDragging(false)}
+      onTap={() => setEditingPlayer(player.id)}
       style={{ cursor: 'grab', touchAction: 'none' }}
     >
       <motion.ellipse

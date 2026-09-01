@@ -2,7 +2,16 @@ import { nanoid } from 'nanoid'
 import { create } from 'zustand'
 
 import { FORMATIONS } from '@/lib/formations'
-import type { Analysis, LayerToggles, MatchInfo, PhaseType, Player } from '@/types/analysis'
+import type {
+  Analysis,
+  AnnotationType,
+  DrawTool,
+  LayerToggles,
+  MatchInfo,
+  PhaseType,
+  Player,
+  Point,
+} from '@/types/analysis'
 
 function emptyPhase(formation: string, players: Player[]) {
   const coords = FORMATIONS[formation] ?? FORMATIONS['4-3-3']
@@ -13,6 +22,7 @@ function emptyPhase(formation: string, players: Player[]) {
       y: coords[i]?.y ?? 50,
     })),
     comment: '',
+    annotations: [],
   }
 }
 
@@ -49,6 +59,8 @@ interface AnalysisStore {
   layers: LayerToggles
   isMorphing: boolean
   isDirty: boolean
+  drawTool: DrawTool // 전술 그리기 도구 (화면 설정 — 저장 대상 아님)
+  editingPlayerId: string | null // 피치의 선수 클릭으로 연 편집 다이얼로그
 
   loadAnalysis: (a: Analysis) => void
   setPhase: (p: PhaseType) => void
@@ -56,6 +68,10 @@ interface AnalysisStore {
   setIsMorphing: (v: boolean) => void
   movePlayer: (playerId: string, x: number, y: number) => void // 현재 국면에만 반영
   moveOpponent: (slot: number, x: number, y: number) => void
+  setDrawTool: (t: DrawTool) => void
+  setEditingPlayer: (id: string | null) => void
+  addAnnotation: (type: AnnotationType, from: Point, to: Point) => void // 현재 국면에 추가
+  removeAnnotation: (id: string) => void
   addOpponents: () => void // 현재 국면에 상대팀 11명 기본 배치 추가 (자팀 포메이션을 하프라인 기준 대칭)
   removeOpponents: () => void
   setComment: (phase: PhaseType, text: string) => void
@@ -87,8 +103,11 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   layers: defaultLayers,
   isMorphing: false,
   isDirty: false,
+  drawTool: 'select',
+  editingPlayerId: null,
 
-  loadAnalysis: (a) => set({ analysis: a, currentPhase: 'base', previousPhase: null, isDirty: false }),
+  loadAnalysis: (a) =>
+    set({ analysis: a, currentPhase: 'base', previousPhase: null, isDirty: false, editingPlayerId: null }),
 
   setPhase: (p) => set({ currentPhase: p }),
 
@@ -138,6 +157,45 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
         phases: {
           ...analysis.phases,
           [currentPhase]: { ...phase, opponentPositions: opp },
+        },
+      },
+      isDirty: true,
+    })
+  },
+
+  setDrawTool: (t) => set({ drawTool: t }),
+
+  setEditingPlayer: (id) => set({ editingPlayerId: id }),
+
+  addAnnotation: (type, from, to) => {
+    const { analysis, currentPhase } = get()
+    if (!analysis) return
+    const phase = analysis.phases[currentPhase]
+    set({
+      analysis: {
+        ...analysis,
+        phases: {
+          ...analysis.phases,
+          [currentPhase]: {
+            ...phase,
+            annotations: [...phase.annotations, { id: nanoid(), type, from, to }],
+          },
+        },
+      },
+      isDirty: true,
+    })
+  },
+
+  removeAnnotation: (id) => {
+    const { analysis, currentPhase } = get()
+    if (!analysis) return
+    const phase = analysis.phases[currentPhase]
+    set({
+      analysis: {
+        ...analysis,
+        phases: {
+          ...analysis.phases,
+          [currentPhase]: { ...phase, annotations: phase.annotations.filter((a) => a.id !== id) },
         },
       },
       isDirty: true,

@@ -11,6 +11,13 @@ const pointSchema = z.object({
 
 const playerPositionSchema = pointSchema.extend({ playerId: z.string() })
 
+const annotationSchema = z.object({
+  id: z.string(),
+  type: z.enum(['run', 'pass']),
+  from: pointSchema,
+  to: pointSchema,
+})
+
 const playerSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -32,6 +39,8 @@ const phaseDataSchema = z.object({
   opponentPositions: z.array(pointSchema).length(11, '상대팀 위치는 정확히 11개여야 합니다').optional(),
   pressingLineY: z.number().min(0).max(100).optional(),
   comment: z.string(),
+  // 구버전 JSON/프리셋에는 없는 키다 — default로 통일해 호환성을 지킨다.
+  annotations: z.array(annotationSchema).default([]),
 })
 
 export const analysisSchema = z

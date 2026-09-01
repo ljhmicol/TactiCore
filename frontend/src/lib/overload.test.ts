@@ -8,6 +8,7 @@ function phase(own: { x: number; y: number }[], opp?: { x: number; y: number }[]
     positions: own.map((p, i) => ({ playerId: `p${i}`, ...p })),
     opponentPositions: opp,
     comment: '',
+    annotations: [],
   }
 }
 

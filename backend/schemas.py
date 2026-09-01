@@ -25,6 +25,17 @@ class PlayerPosition(Point):
     player_id: str
 
 
+class AnnotationIn(BaseModel):
+    """국면별 화살표 (전술 그리기). `from`은 파이썬 예약어라 alias로 받는다."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: str = Field(min_length=1)
+    type: Literal["run", "pass"]
+    from_: Point = Field(alias="from")
+    to: Point
+
+
 class MatchInfo(BaseModel):
     match_name: str = Field(min_length=1)
     home_team: str = Field(min_length=1)
@@ -56,6 +67,8 @@ class PhaseIn(BaseModel):
     opponent_positions: Optional[List[Point]] = None
     pressing_line_y: Optional[float] = Field(default=None, ge=0, le=100)
     comment: str = ""
+    # 구버전 클라이언트 요청에는 없는 키다 — 기본 빈 목록으로 호환된다.
+    annotations: List[AnnotationIn] = []
 
     @field_validator("positions")
     @classmethod

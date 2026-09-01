@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { BottomActionBar } from '@/components/editor/BottomActionBar'
@@ -6,11 +7,15 @@ import { JsonIO } from '@/components/editor/JsonIO'
 import { LayerToggleChips } from '@/components/editor/LayerToggleChips'
 import { MatchInfoForm } from '@/components/editor/MatchInfoForm'
 import { PhaseTabs } from '@/components/editor/PhaseTabs'
+import { PlayerEditDialog } from '@/components/editor/PlayerEditDialog'
 import { PlayerForm } from '@/components/editor/PlayerForm'
 import { SaveButton } from '@/components/editor/SaveButton'
+import { ToolPalette } from '@/components/editor/ToolPalette'
 import { ExportControls } from '@/components/export/ExportControls'
+import { AnnotationLayer } from '@/components/pitch/AnnotationLayer'
 import { ChannelGrid } from '@/components/pitch/ChannelGrid'
 import { CompactnessBox } from '@/components/pitch/CompactnessBox'
+import { DrawOverlay } from '@/components/pitch/DrawOverlay'
 import { GhostLayer } from '@/components/pitch/GhostLayer'
 import { OpponentNode } from '@/components/pitch/OpponentNode'
 import { OverloadLayer } from '@/components/pitch/OverloadLayer'
@@ -33,8 +38,13 @@ export function EditorPage() {
   const previousPhase = useAnalysisStore((s) => s.previousPhase)
   const ghostAutoVisible = useAnalysisStore((s) => s.ghostAutoVisible)
   const layers = useAnalysisStore((s) => s.layers)
+  const drawTool = useAnalysisStore((s) => s.drawTool)
   const addOpponents = useAnalysisStore((s) => s.addOpponents)
   const removeOpponents = useAnalysisStore((s) => s.removeOpponents)
+  const removeAnnotation = useAnalysisStore((s) => s.removeAnnotation)
+  // 화살표 선택 상태. 피치 어디를 눌러도(pointerdown 버블링) 해제된다 —
+  // 화살표 자체는 stopPropagation으로 해제를 막는다.
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null)
 
   if (!analysis) {
     return (
@@ -75,7 +85,8 @@ export function EditorPage() {
           <div className="sticky top-0 z-10 w-full max-w-md bg-background py-2">
             <PhaseTabs />
           </div>
-          <div className="h-[65vh]" data-testid="editor-pitch">
+          <ToolPalette />
+          <div className="h-[65vh]" data-testid="editor-pitch" onPointerDown={() => setSelectedAnnotationId(null)}>
             <Pitch>
               {layers.channelGrid && <ChannelGrid halfSpaces={layers.halfSpaces} />}
               {layers.compactness && <CompactnessBox positions={phase.positions} />}
@@ -89,6 +100,17 @@ export function EditorPage() {
                   currentPositions={phase.positions}
                 />
               )}
+              <AnnotationLayer
+                annotations={phase.annotations}
+                interactive={{
+                  selectedId: selectedAnnotationId,
+                  onSelect: setSelectedAnnotationId,
+                  onRemove: (id) => {
+                    removeAnnotation(id)
+                    setSelectedAnnotationId(null)
+                  },
+                }}
+              />
               {phase.opponentPositions?.map((pos, i) => (
                 <OpponentNode key={i} slot={i} position={pos} />
               ))}
@@ -97,6 +119,7 @@ export function EditorPage() {
                 if (!pos) return null
                 return <PlayerNode key={player.id} player={player} position={pos} />
               })}
+              <DrawOverlay tool={drawTool} />
             </Pitch>
           </div>
           <div className="flex w-full max-w-md items-center justify-between gap-3">
@@ -131,6 +154,7 @@ export function EditorPage() {
       </div>
 
       <BottomActionBar analysis={analysis} />
+      <PlayerEditDialog />
     </div>
   )
 }

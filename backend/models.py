@@ -88,6 +88,12 @@ class Phase(Base):
         cascade="all, delete-orphan",
         order_by="Position.id",
     )
+    annotations = relationship(
+        "Annotation",
+        back_populates="phase",
+        cascade="all, delete-orphan",
+        order_by="Annotation.id",
+    )
 
 
 class Position(Base):
@@ -106,3 +112,24 @@ class Position(Base):
 
     phase = relationship("Phase", back_populates="positions")
     player = relationship("Player", back_populates="positions")
+
+
+class Annotation(Base):
+    """국면별 화살표(전술 그리기, TO-DO 1번). 자유 좌표 — 선수에게 부착되지 않는다.
+
+    기존 DB에 이 테이블이 없어도 create_all이 새 테이블은 자동 생성한다
+    (기존 테이블에 컬럼을 추가하는 방식은 create_all이 반영하지 못해 쓰지 않았다).
+    """
+
+    __tablename__ = "annotations"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    phase_id = Column(Integer, ForeignKey("phases.id", ondelete="CASCADE"), nullable=False)
+    client_id = Column(String, nullable=False)  # JSON 쪽 id를 그대로 보존
+    ann_type = Column(String, nullable=False)  # 'run'(실선·움직임) | 'pass'(점선·패스)
+    from_x = Column(Float, nullable=False)
+    from_y = Column(Float, nullable=False)
+    to_x = Column(Float, nullable=False)
+    to_y = Column(Float, nullable=False)
+
+    phase = relationship("Phase", back_populates="annotations")

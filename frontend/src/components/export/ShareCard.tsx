@@ -1,5 +1,6 @@
 import { forwardRef } from 'react'
 
+import { AnnotationLayer } from '@/components/pitch/AnnotationLayer'
 import { ChannelGrid } from '@/components/pitch/ChannelGrid'
 import { CompactnessBox } from '@/components/pitch/CompactnessBox'
 import { OpponentNode } from '@/components/pitch/OpponentNode'
@@ -78,6 +79,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
                 <PressingLine positions={phase.positions} pressingLineY={phase.pressingLineY} />
               )}
               {layers.overload && hasOpponent && <OverloadLayer phase={phase} />}
+              <AnnotationLayer annotations={phase.annotations} />
               {phase.opponentPositions?.map((pos, i) => (
                 <OpponentNode key={i} slot={i} position={pos} />
               ))}
