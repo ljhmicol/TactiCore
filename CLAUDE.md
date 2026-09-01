@@ -4,7 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 현재 상태
 
-**Phase 1~5 완료, Phase 6(마감)만 남음.** `backend/`에 FastAPI + SQLAlchemy + SQLite 구조가 구현되어 있고(`config.py`, `database.py`, `models.py`, `schemas.py`, `crud.py`, `routers/analyses.py`, `main.py`), `frontend/`에 React 18 + Vite + TS + Tailwind + shadcn/ui로 피치·국면 전환·공간 레이어·PNG/JSON 내보내기·백엔드 저장 연동까지 구현되어 있습니다. 진행 상황은 `docs/5단계_기능_완료_보고서.md`가 최신 기준입니다 — 새 세션에서는 먼저 이 문서를 읽고 어느 Phase부터 이어갈지 확인하세요. 남은 것은 Phase 6(샘플 JSON, 실전 검증, README, 6단계 운영 매뉴얼 명령어 실검증)뿐입니다.
+**MVP 구현 완료 (Phase 1~6 전부).** `backend/`에 FastAPI + SQLAlchemy + SQLite, `frontend/`에 React 18 + Vite + TS + Tailwind + shadcn/ui로 피치·드래그·국면 전환·공간 레이어(5채널/압박라인/콤팩트니스/오버로드)·PNG·JSON 입출력·백엔드 저장 연동까지 전부 구현돼 있습니다. `README.md`, `scripts/dev.ps1`, `frontend/public/samples/sample-4-3-3.json`도 있습니다. 진행 상황은 `docs/5단계_기능_완료_보고서.md`가 최신 기준입니다.
+
+**단, AI 세션이 검증할 수 없는 항목이 남아 있습니다** — 실제 조작감, iOS Safari·Android Chrome 실기기 동작, Safari(WebKit) 렌더링 확인은 사람이 해야 합니다. 전체 목록은 `5단계_기능_완료_보고서.md` §10("사람 확인이 필요한 항목")을 참조하세요. 새 세션에서 이어갈 작업은 대부분 이 §10에 있는 사람 확인 결과를 반영하거나, 요구사항 문서 §1.5의 2차 범위(로그인, 타임라인, 배포 등) 착수일 가능성이 높습니다.
 
 프로젝트는 TactiCore — 축구 전술을 국면(기본/공격/수비)별 대형 변화와 공간 점유로 시각화하고, 결과를 SNS 카드용 PNG로 내보내는 도구입니다.
 

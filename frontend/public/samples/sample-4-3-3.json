@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "match": {
+    "matchName": "TactiCore FC vs 상대 유나이티드",
+    "homeTeam": "TactiCore FC",
+    "awayTeam": "상대 유나이티드",
+    "matchDate": "2026-08-30",
+    "competition": "샘플 리그",
+    "analyzedTeam": "home"
+  },
+  "formation": "4-3-3",
+  "players": [
+    { "id": "p1", "name": "김규현", "number": 1, "role": "GK" },
+    { "id": "p2", "name": "박도윤", "number": 2, "role": "RB" },
+    { "id": "p3", "name": "이서준", "number": 4, "role": "CB" },
+    { "id": "p4", "name": "최민재", "number": 5, "role": "CB" },
+    { "id": "p5", "name": "정하준", "number": 3, "role": "LB" },
+    { "id": "p6", "name": "강지호", "number": 6, "role": "DM" },
+    { "id": "p7", "name": "윤태오", "number": 8, "role": "CM" },
+    { "id": "p8", "name": "임시우", "number": 10, "role": "CM" },
+    { "id": "p9", "name": "한주원", "number": 7, "role": "RW" },
+    { "id": "p10", "name": "오은우", "number": 9, "role": "ST" },
+    { "id": "p11", "name": "장예준", "number": 11, "role": "LW" }
+  ],
+  "phases": {
+    "base": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 92 },
+        { "playerId": "p2", "x": 16, "y": 74 },
+        { "playerId": "p3", "x": 38, "y": 78 },
+        { "playerId": "p4", "x": 62, "y": 78 },
+        { "playerId": "p5", "x": 84, "y": 74 },
+        { "playerId": "p6", "x": 50, "y": 62 },
+        { "playerId": "p7", "x": 32, "y": 52 },
+        { "playerId": "p8", "x": 68, "y": 52 },
+        { "playerId": "p9", "x": 16, "y": 30 },
+        { "playerId": "p10", "x": 50, "y": 22 },
+        { "playerId": "p11", "x": 84, "y": 30 }
+      ],
+      "opponentPositions": [
+        { "x": 50, "y": 8 },
+        { "x": 18, "y": 24 },
+        { "x": 38, "y": 22 },
+        { "x": 62, "y": 22 },
+        { "x": 82, "y": 24 },
+        { "x": 30, "y": 40 },
+        { "x": 50, "y": 38 },
+        { "x": 70, "y": 40 },
+        { "x": 22, "y": 55 },
+        { "x": 50, "y": 50 },
+        { "x": 78, "y": 55 }
+      ],
+      "pressingLineY": 68,
+      "comment": "4-3-3 기본 대형. 상대는 4-3-3 미러 매치로 하이라인을 유지한다."
+    },
+    "attack": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 88 },
+        { "playerId": "p2", "x": 20, "y": 58 },
+        { "playerId": "p3", "x": 40, "y": 66 },
+        { "playerId": "p4", "x": 60, "y": 66 },
+        { "playerId": "p5", "x": 80, "y": 58 },
+        { "playerId": "p6", "x": 50, "y": 52 },
+        { "playerId": "p7", "x": 28, "y": 38 },
+        { "playerId": "p8", "x": 72, "y": 38 },
+        { "playerId": "p9", "x": 12, "y": 18 },
+        { "playerId": "p10", "x": 50, "y": 12 },
+        { "playerId": "p11", "x": 88, "y": 18 }
+      ],
+      "opponentPositions": [
+        { "x": 50, "y": 6 },
+        { "x": 20, "y": 20 },
+        { "x": 40, "y": 16 },
+        { "x": 60, "y": 16 },
+        { "x": 80, "y": 20 },
+        { "x": 32, "y": 32 },
+        { "x": 50, "y": 30 },
+        { "x": 68, "y": 32 },
+        { "x": 24, "y": 46 },
+        { "x": 50, "y": 42 },
+        { "x": 76, "y": 46 }
+      ],
+      "pressingLineY": 58,
+      "comment": "좌측 하프스페이스(윤태오)와 우측 풀백 오버래핑으로 폭을 넓혀 상대 수비 블록을 좌우로 벌린다. 오은우는 최전방에서 상대 센터백 사이 간격을 노린다."
+    },
+    "defense": {
+      "positions": [
+        { "playerId": "p1", "x": 50, "y": 95 },
+        { "playerId": "p2", "x": 22, "y": 84 },
+        { "playerId": "p3", "x": 40, "y": 86 },
+        { "playerId": "p4", "x": 60, "y": 86 },
+        { "playerId": "p5", "x": 78, "y": 84 },
+        { "playerId": "p6", "x": 50, "y": 74 },
+        { "playerId": "p7", "x": 36, "y": 68 },
+        { "playerId": "p8", "x": 64, "y": 68 },
+        { "playerId": "p9", "x": 24, "y": 58 },
+        { "playerId": "p10", "x": 50, "y": 62 },
+        { "playerId": "p11", "x": 76, "y": 58 }
+      ],
+      "opponentPositions": [
+        { "x": 50, "y": 15 },
+        { "x": 18, "y": 32 },
+        { "x": 38, "y": 28 },
+        { "x": 62, "y": 28 },
+        { "x": 82, "y": 32 },
+        { "x": 30, "y": 46 },
+        { "x": 50, "y": 44 },
+        { "x": 70, "y": 46 },
+        { "x": 22, "y": 60 },
+        { "x": 50, "y": 55 },
+        { "x": 78, "y": 60 }
+      ],
+      "pressingLineY": 78,
+      "comment": "4-3-3 그대로 두 줄 수비 블록을 형성. 압박 라인을 낮춰 페널티 지역 앞 공간을 좁힌다."
+    }
+  },
+  "summary": "기본 대형에서 공격 시 좌우 풀백이 동시에 전진해 폭을 확보하고, 수비 시에는 블록을 낮춰 중앙을 단단히 지킨다. 좌측 하프스페이스 오버로드가 이 팀의 핵심 공격 루트다."
+}

@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 
+import { BottomActionBar } from '@/components/editor/BottomActionBar'
 import { CommentPanel } from '@/components/editor/CommentPanel'
 import { JsonIO } from '@/components/editor/JsonIO'
 import { LayerToggleChips } from '@/components/editor/LayerToggleChips'
@@ -22,6 +23,9 @@ import { useAnalysisStore } from '@/store/analysisStore'
 /**
  * / — 편집기. 분석이 없으면 빈 안내, 있으면 피치 + 경기정보/선수 패널을 보여준다.
  * 레이어 z-순서(2단계 §9): 채널 그리드 → 콤팩트니스 → 압박 라인 → 오버로드 → Ghost → 선수 노드(최상단).
+ *
+ * 모바일(§11.2): 국면 탭 sticky, 레이어 칩 가로 스크롤(LayerToggleChips 자체 구현),
+ * 선수 목록 기본 접힘, 하단 고정 액션 바. 데스크톱(§11.1)에서는 2단 그리드로 배치된다.
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
@@ -48,8 +52,11 @@ export function EditorPage() {
   const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
 
   return (
-    <div className="flex flex-col gap-4 p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4">
+    <div className="flex flex-col gap-4 p-6 pb-24 lg:pb-6">
+      <div
+        id="export-toolbar"
+        className="flex flex-wrap items-center justify-between gap-3 border-b border-border pb-4"
+      >
         <div>
           <p className="font-semibold text-foreground">
             {analysis.match.matchName || `${analysis.match.homeTeam} vs ${analysis.match.awayTeam}` || '새 분석'}
@@ -65,7 +72,7 @@ export function EditorPage() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(480px,1fr)_400px]">
         <div className="flex flex-col items-center gap-3">
-          <div className="w-full max-w-md">
+          <div className="sticky top-0 z-10 w-full max-w-md bg-background py-2">
             <PhaseTabs />
           </div>
           <div className="h-[65vh]" data-testid="editor-pitch">
@@ -107,19 +114,23 @@ export function EditorPage() {
           </section>
 
           <section>
-            <h2 className="mb-2 text-sm font-semibold text-foreground">선수 ({analysis.players.length})</h2>
+            <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
+          </section>
+
+          <details className="group">
+            <summary className="mb-2 cursor-pointer text-sm font-semibold text-foreground">
+              선수 ({analysis.players.length})
+            </summary>
             <div className="space-y-2">
               {analysis.players.map((player, i) => (
                 <PlayerForm key={player.id} player={player} index={i} />
               ))}
             </div>
-          </section>
-
-          <section>
-            <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
-          </section>
+          </details>
         </div>
       </div>
+
+      <BottomActionBar analysis={analysis} />
     </div>
   )
 }
