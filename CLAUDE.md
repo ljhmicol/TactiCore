@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 현재 상태
 
-**Phase 1(백엔드 기반, FR-08) 완료, Phase 2~6 미착수.** `backend/`에 FastAPI + SQLAlchemy + SQLite 구조가 구현되어 있고(`config.py`, `database.py`, `models.py`, `schemas.py`, `crud.py`, `routers/analyses.py`, `main.py`) 스모크 테스트 30항목을 통과했습니다. `frontend/`는 아직 생성 전입니다. 진행 상황은 `docs/5단계_기능_완료_보고서.md`가 최신 기준입니다 — 새 세션에서는 먼저 이 문서를 읽고 어느 Phase부터 이어갈지 확인하세요.
+**Phase 1~5 완료, Phase 6(마감)만 남음.** `backend/`에 FastAPI + SQLAlchemy + SQLite 구조가 구현되어 있고(`config.py`, `database.py`, `models.py`, `schemas.py`, `crud.py`, `routers/analyses.py`, `main.py`), `frontend/`에 React 18 + Vite + TS + Tailwind + shadcn/ui로 피치·국면 전환·공간 레이어·PNG/JSON 내보내기·백엔드 저장 연동까지 구현되어 있습니다. 진행 상황은 `docs/5단계_기능_완료_보고서.md`가 최신 기준입니다 — 새 세션에서는 먼저 이 문서를 읽고 어느 Phase부터 이어갈지 확인하세요. 남은 것은 Phase 6(샘플 JSON, 실전 검증, README, 6단계 운영 매뉴얼 명령어 실검증)뿐입니다.
 
 프로젝트는 TactiCore — 축구 전술을 국면(기본/공격/수비)별 대형 변화와 공간 점유로 시각화하고, 결과를 SNS 카드용 PNG로 내보내는 도구입니다.
 

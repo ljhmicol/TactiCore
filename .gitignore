@@ -9,6 +9,7 @@ backend/backup/
 backend/__pycache__/
 backend/**/__pycache__/
 backend/.venv/
+backend/.venv-linux/
 *.pyc
 
 # --- 프론트엔드 ---

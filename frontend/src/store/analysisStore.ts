@@ -64,6 +64,7 @@ interface AnalysisStore {
   updatePlayer: (playerId: string, patch: Partial<Omit<Player, 'id'>>) => void
   toggleLayer: (key: keyof LayerToggles) => void
   applyFormation: (name: string) => void // FR-06
+  applySavedMeta: (meta: { id: number; createdAt: string; updatedAt: string }) => void // 저장 성공 후 id/시각만 반영
 }
 
 const defaultLayers: LayerToggles = {
@@ -222,5 +223,11 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       }
     }
     set({ analysis: { ...analysis, formation: name, phases }, isDirty: true })
+  },
+
+  applySavedMeta: (meta) => {
+    const { analysis } = get()
+    if (!analysis) return
+    set({ analysis: { ...analysis, ...meta }, isDirty: false })
   },
 }))

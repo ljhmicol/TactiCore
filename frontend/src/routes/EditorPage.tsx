@@ -6,6 +6,7 @@ import { LayerToggleChips } from '@/components/editor/LayerToggleChips'
 import { MatchInfoForm } from '@/components/editor/MatchInfoForm'
 import { PhaseTabs } from '@/components/editor/PhaseTabs'
 import { PlayerForm } from '@/components/editor/PlayerForm'
+import { SaveButton } from '@/components/editor/SaveButton'
 import { ExportControls } from '@/components/export/ExportControls'
 import { ChannelGrid } from '@/components/pitch/ChannelGrid'
 import { CompactnessBox } from '@/components/pitch/CompactnessBox'
@@ -56,6 +57,7 @@ export function EditorPage() {
           <p className="text-xs text-muted-foreground">{analysis.match.matchDate}</p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
+          <SaveButton analysis={analysis} />
           <ExportControls analysis={analysis} phase={currentPhase} />
           <JsonIO analysis={analysis} />
         </div>
@@ -66,7 +68,7 @@ export function EditorPage() {
           <div className="w-full max-w-md">
             <PhaseTabs />
           </div>
-          <div className="h-[65vh]">
+          <div className="h-[65vh]" data-testid="editor-pitch">
             <Pitch>
               {layers.channelGrid && <ChannelGrid halfSpaces={layers.halfSpaces} />}
               {layers.compactness && <CompactnessBox positions={phase.positions} />}

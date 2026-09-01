@@ -1,19 +1,38 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { BrowserRouter, Link, Route, Routes } from 'react-router-dom'
 
+import { AnalysesPage } from '@/routes/AnalysesPage'
+import { AnalysisDetailPage } from '@/routes/AnalysisDetailPage'
 import { EditorPage } from '@/routes/EditorPage'
 import { NewAnalysisPage } from '@/routes/NewAnalysisPage'
 
+const queryClient = new QueryClient({
+  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+})
+
 function App() {
   return (
-    <BrowserRouter>
-      <div className="flex h-14 items-center border-b border-border px-6">
-        <span className="font-semibold text-foreground">TactiCore</span>
-      </div>
-      <Routes>
-        <Route path="/" element={<EditorPage />} />
-        <Route path="/new" element={<NewAnalysisPage />} />
-      </Routes>
-    </BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
+        <div className="flex h-14 items-center justify-between border-b border-border px-6">
+          <span className="font-semibold text-foreground">TactiCore</span>
+          <nav className="flex gap-4 text-sm text-muted-foreground">
+            <Link to="/" className="hover:text-foreground">
+              편집기
+            </Link>
+            <Link to="/analyses" className="hover:text-foreground">
+              저장 목록
+            </Link>
+          </nav>
+        </div>
+        <Routes>
+          <Route path="/" element={<EditorPage />} />
+          <Route path="/new" element={<NewAnalysisPage />} />
+          <Route path="/analyses" element={<AnalysesPage />} />
+          <Route path="/analyses/:id" element={<AnalysisDetailPage />} />
+        </Routes>
+      </BrowserRouter>
+    </QueryClientProvider>
   )
 }
 
