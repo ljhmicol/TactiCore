@@ -1,12 +1,20 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { POSITION_LINE_KOREAN, positionInfoAt } from '@/lib/positions'
+import { POSITION_LINE_COLORS } from '@/lib/theme'
 import { useAnalysisStore } from '@/store/analysisStore'
 
 /**
  * TO-DO 13번 — 피치의 선수 클릭(탭)으로 여는 인라인 편집. 우측 '선수' 목록
  * (PlayerForm)과 같은 updatePlayer 액션을 공유해 어느 쪽에서 고쳐도 동일하다.
  * 등번호 검증 규칙(1~99)도 PlayerForm과 동일하게 유지한다.
+ *
+ * 포지션 코드·라인 색 칩은 편집 대상이 아니라 포메이션 슬롯에서 자동 도출한
+ * 정보다(lib/positions.ts) — 피치 노드의 색·라벨과 동일 규칙으로 표시한다.
+ * 확인 버튼은 입력 즉시 반영(store)되는 기존 방식을 유지하면서 닫기 동작만
+ * 명시적으로 제공한다 (2026-09-01 사용자 요청).
  */
 export function PlayerEditDialog() {
   const analysis = useAnalysisStore((s) => s.analysis)
@@ -15,6 +23,9 @@ export function PlayerEditDialog() {
   const updatePlayer = useAnalysisStore((s) => s.updatePlayer)
 
   const player = analysis?.players.find((p) => p.id === editingPlayerId) ?? null
+  const index = analysis?.players.findIndex((p) => p.id === editingPlayerId) ?? -1
+  const info = analysis && index >= 0 ? positionInfoAt(analysis.formation, index) : null
+
   if (!player) return null
 
   const handleNumberChange = (raw: string) => {
@@ -27,7 +38,17 @@ export function PlayerEditDialog() {
     <Dialog open onOpenChange={(open) => !open && setEditingPlayer(null)}>
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>선수 수정</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            선수 수정
+            {info && (
+              <span
+                className="inline-flex items-center gap-1.5 rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{ background: POSITION_LINE_COLORS[info.line].fill, color: POSITION_LINE_COLORS[info.line].text }}
+              >
+                {info.label} · {POSITION_LINE_KOREAN[info.line]}
+              </span>
+            )}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="grid grid-cols-[4rem_1fr] gap-3">
@@ -66,6 +87,11 @@ export function PlayerEditDialog() {
             />
           </div>
         </div>
+        <DialogFooter>
+          <Button type="button" onClick={() => setEditingPlayer(null)}>
+            확인
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   )

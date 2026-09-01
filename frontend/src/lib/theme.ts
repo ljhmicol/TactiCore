@@ -31,6 +31,20 @@ export const PLAYER_COLORS = {
   },
 } as const
 
+/**
+ * 포지션 라인별 노드 색 (2026-09-01 사용자 요청 — 가시성):
+ * 골키퍼=노랑, 수비=파랑, 미드필더=초록, 공격=빨강.
+ * 초록은 피치 배경(#1B5E3F) 위에서 구분되도록 밝은 톤. text는 원 안
+ * 등번호 색 — 채도가 낮은 노랑·초록 위에는 어두운 글자로 대비를 맞춘다.
+ * 도출 규칙(lib/positions.ts)과 함께 쓴다.
+ */
+export const POSITION_LINE_COLORS = {
+  GK: { fill: '#FACC15', text: '#0F172A' },
+  DF: { fill: '#3B82F6', text: '#F8FAFC' },
+  MF: { fill: '#4ADE80', text: '#0F172A' },
+  FW: { fill: '#EF4444', text: '#F8FAFC' },
+} as const
+
 export const LAYER_COLORS = {
   channelGrid: { color: '#FFFFFF', opacity: 0.2 },
   halfSpaces: { color: '#FFFFFF', opacity: 0.08 },

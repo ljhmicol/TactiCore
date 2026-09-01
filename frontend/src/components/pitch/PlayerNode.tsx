@@ -3,7 +3,8 @@ import { useState } from 'react'
 
 import { clampCoord, clientToPitch } from '@/lib/coords'
 import { circularRadius } from '@/lib/pitchMarkings'
-import { PLAYER_COLORS } from '@/lib/theme'
+import { positionInfoAt } from '@/lib/positions'
+import { PLAYER_COLORS, POSITION_LINE_COLORS } from '@/lib/theme'
 import { useAnalysisStore } from '@/store/analysisStore'
 import type { Player, Point } from '@/types/analysis'
 
@@ -28,13 +29,21 @@ const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
  * onTap은 드래그(pan) 없이 짧게 누른 경우에만 발생한다 — 선수 클릭 편집
  * 다이얼로그(TO-DO 13번)의 입력점. 그리기 모드에서는 DrawOverlay가 입력을
  * 가로채 여기까지 오지 않는다.
+ *
+ * 노드 색은 포지션 라인별로 칠한다(2026-09-01 사용자 요청 — GK 노랑/DF 파랑/
+ * MF 초록/FW 빨강). 라인·포지션 코드는 포메이션 이름과 players 순서에서
+ * 자동 도출하며(lib/positions.ts), 도출 불가 시 기존 단색으로 폴백한다.
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
   const movePlayer = useAnalysisStore((s) => s.movePlayer)
   const setEditingPlayer = useAnalysisStore((s) => s.setEditingPlayer)
+  const index = useAnalysisStore((s) => s.analysis?.players.findIndex((p) => p.id === player.id) ?? -1)
+  const formation = useAnalysisStore((s) => s.analysis?.formation)
   const [dragging, setDragging] = useState(false)
   const transition = dragging ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
+  const info = formation ? positionInfoAt(formation, index) : null
+  const lineColor = info ? POSITION_LINE_COLORS[info.line] : null
 
   const handlePan = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (!svgRef.current) return
@@ -56,16 +65,30 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
         transition={transition}
         rx={OWN_RADIUS.rx}
         ry={OWN_RADIUS.ry}
-        fill={PLAYER_COLORS.own.fill}
+        fill={lineColor?.fill ?? PLAYER_COLORS.own.fill}
         stroke={PLAYER_COLORS.own.stroke}
         strokeOpacity={PLAYER_COLORS.own.strokeOpacity}
         strokeWidth={0.3}
       />
+      {info && (
+        <motion.text
+          initial={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
+          animate={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
+          transition={transition}
+          fill={PLAYER_COLORS.own.fill}
+          fillOpacity={0.9}
+          fontSize={1.7}
+          textAnchor="middle"
+          style={{ userSelect: 'none' }}
+        >
+          {info.label}
+        </motion.text>
+      )}
       <motion.text
         initial={{ x: position.x, y: position.y }}
         animate={{ x: position.x, y: position.y }}
         transition={transition}
-        fill={PLAYER_COLORS.own.text}
+        fill={lineColor?.text ?? PLAYER_COLORS.own.text}
         fontSize={2.4}
         textAnchor="middle"
         dominantBaseline="central"
