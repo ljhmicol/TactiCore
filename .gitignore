@@ -1,3 +1,7 @@
+# --- 데이터 (SQLite, 컨테이너 볼륨 마운트 대상) ---
+data/
+backup/
+
 # --- 백엔드 ---
 backend/tacticore.db
 backend/tacticore.db-journal
