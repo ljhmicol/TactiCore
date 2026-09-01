@@ -1,0 +1,83 @@
+export type PhaseType = 'base' | 'attack' | 'defense'
+export type TeamSide = 'home' | 'away'
+
+/** 0~100 백분율 좌표. x=좌우 터치라인, y=0이 상대 골라인 */
+export interface Point {
+  x: number
+  y: number
+}
+
+export interface MatchInfo {
+  matchName: string
+  homeTeam: string
+  awayTeam: string
+  matchDate: string // YYYY-MM-DD
+  competition?: string
+  analyzedTeam: TeamSide
+}
+
+export interface Player {
+  id: string // 프론트가 생성 (nanoid). 저장·재로드해도 불변
+  name: string
+  number: number // 1~99
+  role?: string
+}
+
+export interface PlayerPosition extends Point {
+  playerId: string
+}
+
+export interface PhaseData {
+  positions: PlayerPosition[] // 자팀 11명
+  opponentPositions?: Point[] // 있으면 11개 전부
+  pressingLineY?: number // 없으면 자동 산출
+  comment: string
+}
+
+export interface Analysis {
+  id?: number // 서버 저장 후에만 존재
+  schemaVersion: 1
+  match: MatchInfo
+  formation: string // '4-3-3'
+  players: Player[] // 11명 고정
+  phases: Record<PhaseType, PhaseData>
+  summary: string
+  createdAt?: string
+  updatedAt?: string
+}
+
+/** 목록 조회 전용 (좌표 없음) */
+export interface AnalysisSummary {
+  id: number
+  matchName: string
+  homeTeam: string
+  awayTeam: string
+  matchDate: string
+  competition?: string
+  updatedAt: string
+}
+
+// 시각화 계산용 타입
+
+export type Channel = 'leftWing' | 'leftHalf' | 'center' | 'rightHalf' | 'rightWing'
+export type Third = 'attacking' | 'middle' | 'defensive'
+export type OverloadLevel = 'none' | 'weak' | 'strong'
+
+export interface ZoneOverload {
+  channel: Channel
+  third: Third
+  own: number
+  opp: number
+  diff: number
+  level: OverloadLevel
+}
+
+export interface LayerToggles {
+  // 화면 설정. 저장 대상 아님
+  channelGrid: boolean
+  halfSpaces: boolean
+  pressingLine: boolean
+  compactness: boolean
+  overload: boolean
+  ghostView: boolean
+}
