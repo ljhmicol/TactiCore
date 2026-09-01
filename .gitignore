@@ -1,0 +1,24 @@
+# --- 백엔드 ---
+backend/tacticore.db
+backend/tacticore.db-journal
+backend/backup/
+backend/__pycache__/
+backend/**/__pycache__/
+backend/.venv/
+*.pyc
+
+# --- 프론트엔드 ---
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+
+# --- 환경 변수 ---
+.env
+.env.local
+*.env
+
+# --- 편집기 / OS ---
+.vscode/
+.idea/
+Thumbs.db
+desktop.ini
