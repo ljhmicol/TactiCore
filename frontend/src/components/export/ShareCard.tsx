@@ -38,9 +38,20 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
   const layers = useAnalysisStore((s) => s.layers)
   const phase = analysis.phases[phaseType]
   const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
-  const bodyText = textSource === 'summary' ? analysis.summary : phase.comment
+  const rawBodyText = textSource === 'summary' ? analysis.summary : phase.comment
   const cardHeight = ratio === '1:1' ? 1080 : 1350
   const bench = analysis.players.filter((p) => !phase.positions.some((pos) => pos.playerId === p.id))
+  // 코멘트가 감독 프리셋처럼 길면 CSS만으로 자르다가 문장 중간을 그대로
+  // 잘라내 버린다(사용자 리포트: "png보니까 짤린다"). 게다가 html-to-image가
+  // 노드를 SVG로 복제·직렬화하는 과정에서 `-webkit-line-clamp`의 "…" 표시가
+  // 재현되지 않는 걸 실측으로 확인했다 — 그래서 줄 수 대신 글자 수를 JS에서
+  // 직접 계산해 자르고 "…"을 문자로 붙인다(항상 완전한 글자 단위로 잘림).
+  // CJK 위주 텍스트라 fontSize(32px)를 글자 폭 근사치로 쓴다.
+  const maxLines = ratio === '1:1' ? (bench.length > 0 ? 5 : 6) : bench.length > 0 ? 7 : 8
+  const charsPerLine = Math.floor((1080 - 128) / 29)
+  const maxChars = maxLines * charsPerLine
+  const bodyText =
+    rawBodyText.length > maxChars ? `${rawBodyText.slice(0, maxChars - 1).trimEnd()}…` : rawBodyText
 
   return (
     <div style={{ position: 'absolute', left: -9999, top: 0 }}>
@@ -71,7 +82,14 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
           </div>
         </div>
 
-        <div style={{ flex: 1, minHeight: 0, display: 'flex', justifyContent: 'center' }}>
+        <div
+          style={{
+            flex: 1,
+            minHeight: ratio === '1:1' ? 380 : 460,
+            display: 'flex',
+            justifyContent: 'center',
+          }}
+        >
           <div style={{ height: '100%' }}>
             <Pitch>
               {layers.channelGrid && <ChannelGrid halfSpaces={layers.halfSpaces} />}
@@ -98,7 +116,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
             fontSize: 32,
             color: SHARE_CARD_COLORS.body,
             lineHeight: 1.5,
-            maxHeight: bench.length > 0 ? 160 : 220,
+            maxHeight: maxLines * 32 * 1.5,
             overflow: 'hidden',
           }}
         >
