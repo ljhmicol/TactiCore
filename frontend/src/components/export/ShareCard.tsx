@@ -18,7 +18,6 @@ interface ShareCardProps {
   analysis: Analysis
   phase: PhaseType
   ratio: '1:1' | '4:5'
-  textSource: 'comment' | 'summary'
 }
 
 /**
@@ -32,22 +31,23 @@ interface ShareCardProps {
  * 캡처 영역 밖으로 밀려나 빈 이미지가 나온다.
  */
 export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function ShareCard(
-  { analysis, phase: phaseType, ratio, textSource },
+  { analysis, phase: phaseType, ratio },
   ref,
 ) {
   const layers = useAnalysisStore((s) => s.layers)
   const phase = analysis.phases[phaseType]
   const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
-  const rawBodyText = textSource === 'summary' ? analysis.summary : phase.comment
+  // 국면 코멘트는 감독 프리셋 기준 200자를 훌쩍 넘겨 카드에 넣기엔 항상 너무
+  // 길었다(사용자 리포트: "png보니까 짤린다"). 코멘트 대신 '종합 평가'(짧은
+  // 요약 문구, 2단계 §10)만 쓰기로 함 — 2026-09-02 사용자 결정.
+  const rawBodyText = analysis.summary
   const cardHeight = ratio === '1:1' ? 1080 : 1350
   const bench = analysis.players.filter((p) => !phase.positions.some((pos) => pos.playerId === p.id))
-  // 코멘트가 감독 프리셋처럼 길면 CSS만으로 자르다가 문장 중간을 그대로
-  // 잘라내 버린다(사용자 리포트: "png보니까 짤린다"). 게다가 html-to-image가
-  // 노드를 SVG로 복제·직렬화하는 과정에서 `-webkit-line-clamp`의 "…" 표시가
-  // 재현되지 않는 걸 실측으로 확인했다 — 그래서 줄 수 대신 글자 수를 JS에서
-  // 직접 계산해 자르고 "…"을 문자로 붙인다(항상 완전한 글자 단위로 잘림).
-  // CJK 위주 텍스트라 fontSize(32px)를 글자 폭 근사치로 쓴다.
-  const maxLines = ratio === '1:1' ? (bench.length > 0 ? 5 : 6) : bench.length > 0 ? 7 : 8
+  // 그래도 요약을 길게 쓰는 경우를 대비해 안전망은 남겨둔다. 줄 수 대신 글자
+  // 수를 JS에서 직접 계산해 자르고 "…"을 문자로 붙인다 — CSS `line-clamp`는
+  // html-to-image가 노드를 SVG로 복제·직렬화하는 과정에서 "…" 표시가
+  // 재현되지 않는 것을 실측으로 확인했다(항상 완전한 글자 단위로 잘림).
+  const maxLines = bench.length > 0 ? 3 : 4
   const charsPerLine = Math.floor((1080 - 128) / 29)
   const maxChars = maxLines * charsPerLine
   const bodyText =
