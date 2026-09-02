@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { BottomActionBar } from '@/components/editor/BottomActionBar'
+import { RecentAnalyses } from '@/components/editor/RecentAnalyses'
 import { CommentPanel } from '@/components/editor/CommentPanel'
 import { JsonIO } from '@/components/editor/JsonIO'
 import { LayerToggleChips } from '@/components/editor/LayerToggleChips'
@@ -48,11 +49,14 @@ export function EditorPage() {
 
   if (!analysis) {
     return (
-      <div className="flex h-[70vh] flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">아직 분석이 없습니다.</p>
-        <Button asChild>
-          <Link to="/new">새 분석 시작</Link>
-        </Button>
+      <div className="mx-auto flex max-w-md flex-col items-center gap-6 px-6 py-24 text-center">
+        <div className="flex flex-col items-center gap-4">
+          <p className="text-muted-foreground">아직 분석이 없습니다.</p>
+          <Button asChild>
+            <Link to="/new">새 분석 시작</Link>
+          </Button>
+        </div>
+        <RecentAnalyses />
       </div>
     )
   }
