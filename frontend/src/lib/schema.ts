@@ -49,7 +49,10 @@ export const analysisSchema = z
     schemaVersion: z.literal(1),
     match: matchInfoSchema,
     formation: z.string(),
-    players: z.array(playerSchema).length(11, '선수는 정확히 11명이어야 합니다'),
+    players: z
+      .array(playerSchema)
+      .min(11, '선수는 최소 11명(선발)이어야 합니다')
+      .max(23, '선수는 최대 23명(선발 11 + 벤치 12)까지 가능합니다'),
     phases: z.object({
       base: phaseDataSchema,
       attack: phaseDataSchema,
@@ -66,7 +69,9 @@ export const analysisSchema = z
     }
     const idSet = new Set(ids)
     for (const phaseType of ['base', 'attack', 'defense'] as const) {
-      data.phases[phaseType].positions.forEach((pos, i) => {
+      const positions = data.phases[phaseType].positions
+      const seen = new Set<string>()
+      positions.forEach((pos, i) => {
         if (!idSet.has(pos.playerId)) {
           ctx.addIssue({
             code: z.ZodIssueCode.custom,
@@ -74,6 +79,14 @@ export const analysisSchema = z
             message: `players에 존재하지 않는 선수 id입니다: ${pos.playerId}`,
           })
         }
+        if (seen.has(pos.playerId)) {
+          ctx.addIssue({
+            code: z.ZodIssueCode.custom,
+            path: ['phases', phaseType, 'positions', i, 'playerId'],
+            message: `같은 선수의 좌표가 중복되었습니다: ${pos.playerId}`,
+          })
+        }
+        seen.add(pos.playerId)
       })
     }
   })

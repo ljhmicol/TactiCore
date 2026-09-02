@@ -78,6 +78,8 @@ interface AnalysisStore {
   setSummary: (text: string) => void
   setMatchInfo: (patch: Partial<MatchInfo>) => void
   updatePlayer: (playerId: string, patch: Partial<Omit<Player, 'id'>>) => void
+  addPlayer: () => void // 벤치 선수 추가 — 항상 배열 끝에 붙인다 (선발 인덱스 0~10 보존, TO-DO 14)
+  removePlayer: (playerId: string) => void // 선발(현재 base 국면에 좌표가 있는 선수)은 지울 수 없다
   toggleLayer: (key: keyof LayerToggles) => void
   applyFormation: (name: string) => void // FR-06
   applySavedMeta: (meta: { id: number; createdAt: string; updatedAt: string }) => void // 저장 성공 후 id/시각만 반영
@@ -262,6 +264,27 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
     })
   },
 
+  addPlayer: () => {
+    const { analysis } = get()
+    if (!analysis || analysis.players.length >= 23) return
+    const usedNumbers = new Set(analysis.players.map((p) => p.number))
+    let nextNumber = 12
+    while (usedNumbers.has(nextNumber) && nextNumber < 99) nextNumber++
+    const newPlayer: Player = { id: nanoid(), name: '', number: nextNumber }
+    set({ analysis: { ...analysis, players: [...analysis.players, newPlayer] }, isDirty: true })
+  },
+
+  removePlayer: (playerId) => {
+    const { analysis } = get()
+    if (!analysis || analysis.players.length <= 11) return
+    const isStarter = analysis.phases.base.positions.some((p) => p.playerId === playerId)
+    if (isStarter) return // 선발은 이 액션으로 지울 수 없다 — 벤치 전용
+    set({
+      analysis: { ...analysis, players: analysis.players.filter((p) => p.id !== playerId) },
+      isDirty: true,
+    })
+  },
+
   toggleLayer: (key) => set((state) => ({ layers: { ...state.layers, [key]: !state.layers[key] } })),
 
   applyFormation: (name) => {
@@ -269,11 +292,13 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
     if (!analysis) return
     const coords = FORMATIONS[name]
     if (!coords) return
+    // 선발 11명(배열 앞 11자리)에만 새 좌표를 매핑한다 — 벤치 선수는 좌표를 받지 않는다.
+    const starters = analysis.players.slice(0, coords.length)
     const phases = { ...analysis.phases }
     for (const phaseType of Object.keys(phases) as PhaseType[]) {
       phases[phaseType] = {
         ...phases[phaseType],
-        positions: analysis.players.map((player, i) => ({
+        positions: starters.map((player, i) => ({
           playerId: player.id,
           x: coords[i]?.x ?? 50,
           y: coords[i]?.y ?? 50,

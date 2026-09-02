@@ -40,6 +40,7 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
   const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
   const bodyText = textSource === 'summary' ? analysis.summary : phase.comment
   const cardHeight = ratio === '1:1' ? 1080 : 1350
+  const bench = analysis.players.filter((p) => !phase.positions.some((pos) => pos.playerId === p.id))
 
   return (
     <div style={{ position: 'absolute', left: -9999, top: 0 }}>
@@ -97,12 +98,26 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
             fontSize: 32,
             color: SHARE_CARD_COLORS.body,
             lineHeight: 1.5,
-            maxHeight: 220,
+            maxHeight: bench.length > 0 ? 160 : 220,
             overflow: 'hidden',
           }}
         >
           {bodyText}
         </div>
+
+        {bench.length > 0 && (
+          <div
+            style={{
+              fontSize: 22,
+              color: SHARE_CARD_COLORS.subtitle,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            벤치 {bench.map((p) => `${p.number} ${p.name}`.trim()).join(' · ')}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -43,6 +43,7 @@ export function EditorPage() {
   const addOpponents = useAnalysisStore((s) => s.addOpponents)
   const removeOpponents = useAnalysisStore((s) => s.removeOpponents)
   const removeAnnotation = useAnalysisStore((s) => s.removeAnnotation)
+  const addPlayer = useAnalysisStore((s) => s.addPlayer)
   // 화살표 선택 상태. 피치 어디를 눌러도(pointerdown 버블링) 해제된다 —
   // 화살표 자체는 stopPropagation으로 해제를 막는다.
   const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null)
@@ -146,13 +147,23 @@ export function EditorPage() {
 
           <details className="group">
             <summary className="mb-2 cursor-pointer text-sm font-semibold text-foreground">
-              선수 ({analysis.players.length})
+              선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})
             </summary>
             <div className="space-y-2">
               {analysis.players.map((player, i) => (
                 <PlayerForm key={player.id} player={player} index={i} />
               ))}
             </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="mt-2"
+              disabled={analysis.players.length >= 23}
+              onClick={addPlayer}
+            >
+              선수 추가
+            </Button>
           </details>
         </div>
       </div>

@@ -51,7 +51,7 @@ export interface Analysis {
   schemaVersion: 1
   match: MatchInfo
   formation: string // '4-3-3'
-  players: Player[] // 11명 고정
+  players: Player[] // 선발 11 + 벤치 최대 12(선택). 벤치는 앞 11명(선발) 뒤에만 붙는다 — TO-DO 14
   phases: Record<PhaseType, PhaseData>
   summary: string
   createdAt?: string

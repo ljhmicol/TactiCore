@@ -13,7 +13,8 @@ PhaseType = Literal["base", "attack", "defense"]
 TeamSide = Literal["home", "away"]
 
 PHASE_TYPES: tuple[str, ...] = ("base", "attack", "defense")
-SQUAD_SIZE = 11
+SQUAD_SIZE = 11  # positions/opponent_positions는 항상 이 숫자(선발) — TO-DO 14
+MAX_SQUAD_SIZE = 23  # players는 선발 11 + 벤치 최대 12
 
 
 class Point(BaseModel):
@@ -99,8 +100,10 @@ class AnalysisIn(BaseModel):
     @field_validator("players")
     @classmethod
     def _check_players(cls, v: List[PlayerIn]) -> List[PlayerIn]:
-        if len(v) != SQUAD_SIZE:
-            raise ValueError(f"players는 {SQUAD_SIZE}명이어야 합니다 (현재 {len(v)}명)")
+        if not (SQUAD_SIZE <= len(v) <= MAX_SQUAD_SIZE):
+            raise ValueError(
+                f"players는 {SQUAD_SIZE}~{MAX_SQUAD_SIZE}명이어야 합니다 (현재 {len(v)}명)"
+            )
         ids = [p.id for p in v]
         if len(set(ids)) != len(ids):
             raise ValueError("players[].id 가 중복되었습니다")
