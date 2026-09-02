@@ -1,4 +1,4 @@
-import { forwardRef } from 'react'
+import { forwardRef, useLayoutEffect, useRef, useState } from 'react'
 
 import { AnnotationLayer } from '@/components/pitch/AnnotationLayer'
 import { ChannelGrid } from '@/components/pitch/ChannelGrid'
@@ -13,6 +13,31 @@ import { useAnalysisStore } from '@/store/analysisStore'
 import type { Analysis, PhaseType } from '@/types/analysis'
 
 const PHASE_LABELS: Record<PhaseType, string> = { base: '기본', attack: '공격', defense: '수비' }
+
+/**
+ * 텍스트가 boxHeight를 넘으면 "…"으로 자르는 대신 폰트 크기를 줄여서 전체가
+ * 보이게 한다 — 사용자 리포트: "...으로 끝나면 차라리 없는 게 낫다". 실제
+ * DOM 높이(scrollHeight)를 재는 방식이라 html-to-image가 캡처하는 시점에는
+ * 이미 알맞은 크기로 그려진 상태다(레이아웃 이펙트 → 페인트 → 캡처 순서).
+ */
+function useFitFontSize(text: string, boxHeight: number, maxSize: number, minSize: number) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [fontSize, setFontSize] = useState(maxSize)
+
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    let size = maxSize
+    el.style.fontSize = `${size}px`
+    while (el.scrollHeight > boxHeight && size > minSize) {
+      size -= 1
+      el.style.fontSize = `${size}px`
+    }
+    setFontSize(size)
+  }, [text, boxHeight, maxSize, minSize])
+
+  return { ref, fontSize }
+}
 
 interface ShareCardProps {
   analysis: Analysis
@@ -40,18 +65,15 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
   // 국면 코멘트는 감독 프리셋 기준 200자를 훌쩍 넘겨 카드에 넣기엔 항상 너무
   // 길었다(사용자 리포트: "png보니까 짤린다"). 코멘트 대신 '종합 평가'(짧은
   // 요약 문구, 2단계 §10)만 쓰기로 함 — 2026-09-02 사용자 결정.
-  const rawBodyText = analysis.summary
   const cardHeight = ratio === '1:1' ? 1080 : 1350
   const bench = analysis.players.filter((p) => !phase.positions.some((pos) => pos.playerId === p.id))
-  // 그래도 요약을 길게 쓰는 경우를 대비해 안전망은 남겨둔다. 줄 수 대신 글자
-  // 수를 JS에서 직접 계산해 자르고 "…"을 문자로 붙인다 — CSS `line-clamp`는
-  // html-to-image가 노드를 SVG로 복제·직렬화하는 과정에서 "…" 표시가
-  // 재현되지 않는 것을 실측으로 확인했다(항상 완전한 글자 단위로 잘림).
-  const maxLines = bench.length > 0 ? 3 : 4
-  const charsPerLine = Math.floor((1080 - 128) / 29)
-  const maxChars = maxLines * charsPerLine
-  const bodyText =
-    rawBodyText.length > maxChars ? `${rawBodyText.slice(0, maxChars - 1).trimEnd()}…` : rawBodyText
+  // "…"으로 잘라내는 방식은 여전히 안 좋아 보인다는 피드백 — 글자 수로 잘라
+  // 말줄임표를 붙이는 대신 박스 높이에 맞을 때까지 폰트 크기를 줄인다. 그래도
+  // 극단적으로 긴 입력(요약이 아니라 사실상 문단)에 대비해 400자에서 한 번은
+  // 잘라낸다 — 이 한도는 정상적인 '짧은 요약' 사용에서는 걸릴 일이 없다.
+  const bodyText = analysis.summary.length > 400 ? `${analysis.summary.slice(0, 399).trimEnd()}…` : analysis.summary
+  const bodyBoxHeight = ratio === '1:1' ? (bench.length > 0 ? 150 : 190) : bench.length > 0 ? 190 : 240
+  const { ref: bodyRef, fontSize: bodyFontSize } = useFitFontSize(bodyText, bodyBoxHeight, 32, 16)
 
   return (
     <div style={{ position: 'absolute', left: -9999, top: 0 }}>
@@ -112,11 +134,12 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
         </div>
 
         <div
+          ref={bodyRef}
           style={{
-            fontSize: 32,
+            fontSize: bodyFontSize,
             color: SHARE_CARD_COLORS.body,
             lineHeight: 1.5,
-            maxHeight: maxLines * 32 * 1.5,
+            height: bodyBoxHeight,
             overflow: 'hidden',
           }}
         >
