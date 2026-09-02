@@ -55,8 +55,8 @@ const MANAGER_PRESETS: ManagerPreset[] = [
   {
     url: '/samples/managers/lee_jeonghyo_suwon.json',
     manager: '이정효',
-    club: '수원삼성 시절',
-    blurb: '4-3-3 기반, 수비 시 4-2-4 전방 압박',
+    club: '수원삼성 2026, K리그2',
+    blurb: '4-4-2 기반, 중앙 미드필더가 내려와 3백 빌드업',
   },
 ]
 

@@ -100,10 +100,14 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
         initial={{ x: position.x, y: position.y + OWN_RADIUS.ry + 3 }}
         animate={{ x: position.x, y: position.y + OWN_RADIUS.ry + 3 }}
         transition={transition}
-        fill={PLAYER_COLORS.own.text}
+        fill="#F8FAFC"
         fontSize={2}
+        fontWeight={700}
         textAnchor="middle"
-        style={{ userSelect: 'none' }}
+        style={{ userSelect: 'none', paintOrder: 'stroke' }}
+        stroke="#0F172A"
+        strokeWidth={0.35}
+        strokeOpacity={0.55}
       >
         {player.name}
       </motion.text>

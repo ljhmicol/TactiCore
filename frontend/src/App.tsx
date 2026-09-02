@@ -15,7 +15,9 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <div className="flex h-14 items-center justify-between border-b border-border px-6">
-          <span className="font-semibold text-foreground">TactiCore</span>
+          <Link to="/" className="font-semibold text-foreground hover:text-foreground/80">
+            TactiCore
+          </Link>
           <nav className="flex gap-4 text-sm text-muted-foreground">
             <Link to="/" className="hover:text-foreground">
               편집기
