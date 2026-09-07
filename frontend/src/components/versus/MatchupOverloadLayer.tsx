@@ -35,7 +35,17 @@ export function MatchupOverloadLayer({ zones, orientation = 'portrait' }: Matchu
           const opacity = Math.abs(z.diff) >= 2 ? 0.32 : 0.16
           return (
             <g key={`${z.channel}-${z.third}`}>
-              <rect x={rect.x} y={rect.y} width={rect.width} height={rect.height} fill={color} fillOpacity={opacity} />
+              <rect
+                x={rect.x}
+                y={rect.y}
+                width={rect.width}
+                height={rect.height}
+                fill={color}
+                fillOpacity={opacity}
+                stroke={color}
+                strokeOpacity={0.9}
+                strokeWidth={0.5}
+              />
               <text
                 x={label.x}
                 y={label.y}

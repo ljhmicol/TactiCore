@@ -38,6 +38,12 @@ import { useAnalysisStore } from '@/store/analysisStore'
  * 사용자 요청으로 다시 접힘으로 되돌렸다. 못 찾는 문제는 펼침 여부가
  * 아니라 헤더가 클릭 가능해 보이지 않던 게 원인이었어서, 셰브런 아이콘 +
  * hover 배경으로 아코디언처럼 보이게 하는 쪽으로 해결했다.
+ *
+ * 선수 목록은 왼쪽 컬럼(피치 쪽)에 있다(2026-09-07) — 원래 오른쪽(경기
+ * 정보·코멘트 옆)에 있었는데 피치와 더 가까운 왼쪽으로 옮겨달라는 요청.
+ * 목록 내용물 div에만 `max-h-[45vh] overflow-y-auto`를 줘서 선수가
+ * 많아져도(최대 23명) 그 박스 안에서만 스크롤되고 페이지 전체 높이는
+ * 늘어나지 않는다 — 헤더(summary)는 스크롤 대상 밖에 있어 항상 보인다.
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
@@ -139,24 +145,15 @@ export function EditorPage() {
               {hasOpponent ? '상대팀 제거' : '상대팀 추가'}
             </Button>
           </div>
-        </div>
 
-        <div className="space-y-6 overflow-y-auto">
-          <section>
-            <h2 className="mb-2 text-sm font-semibold text-foreground">경기 정보</h2>
-            <MatchInfoForm match={analysis.match} />
-          </section>
-
-          <section>
-            <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
-          </section>
-
-          <details className="group rounded-md border border-border">
+          <details className="group w-full max-w-md rounded-md border border-border">
             <summary className="flex cursor-pointer list-none items-center justify-between rounded-md p-3 text-sm font-semibold text-foreground hover:bg-secondary [&::-webkit-details-marker]:hidden">
               <span>선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})</span>
               <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
             </summary>
-            <div className="space-y-2 px-3 pb-3">
+            {/* 목록 자체만 스크롤된다 — 선수가 많아져도(최대 23명) 페이지 전체가
+                늘어나지 않고 이 박스 안에서만 스크롤바가 생긴다 (2026-09-07). */}
+            <div className="max-h-[45vh] space-y-2 overflow-y-auto px-3 pb-3">
               {analysis.players.map((player, i) => (
                 <PlayerForm key={player.id} player={player} index={i} />
               ))}
@@ -172,6 +169,17 @@ export function EditorPage() {
               </Button>
             </div>
           </details>
+        </div>
+
+        <div className="space-y-6">
+          <section>
+            <h2 className="mb-2 text-sm font-semibold text-foreground">경기 정보</h2>
+            <MatchInfoForm match={analysis.match} />
+          </section>
+
+          <section>
+            <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
+          </section>
         </div>
       </div>
 

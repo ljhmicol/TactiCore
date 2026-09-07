@@ -10,7 +10,7 @@
  * blurb는 국면 코멘트 작성 보조(CommentPanel의 "문구 삽입")에 그대로 쓰이는
  * 문장이라, 사람이 쓴 코멘트 톤에 맞춰 완결된 한 문장으로 적는다.
  */
-import type { PositionLine } from '@/lib/positions'
+import type { PositionInfo, PositionLine } from '@/lib/positions'
 
 export type PositionGroup = 'GK' | 'CB' | 'FB' | 'WB' | 'DM' | 'CM' | 'AM' | 'WM' | 'W' | 'ST'
 
@@ -125,4 +125,16 @@ export function allTacticalRoles(): (TacticalRole & { group: PositionGroup })[] 
 export function findTacticalRole(id: string | undefined): TacticalRole | undefined {
   if (!id) return undefined
   return allTacticalRoles().find((r) => r.id === id)
+}
+
+/**
+ * 역할 드롭다운(PlayerForm·PlayerEditDialog 공용, TO-DO 20)이 보여줄 목록.
+ * info가 있으면(선발) 그 포지션 그룹에 맞는 역할만, 없으면(벤치·포지션
+ * 미상) 전체 목록을 그룹명과 함께 펼친다.
+ */
+export function roleOptionsFor(info: PositionInfo | null): (TacticalRole & { groupLabel?: string })[] {
+  if (info) {
+    return TACTICAL_ROLES[positionGroupFromLabel(info.label, info.line)].map((r) => ({ ...r, groupLabel: undefined }))
+  }
+  return allTacticalRoles().map((r) => ({ ...r, groupLabel: POSITION_GROUP_KOREAN[r.group] }))
 }

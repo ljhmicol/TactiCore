@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { positionInfoAt } from '@/lib/positions'
-import { allTacticalRoles, POSITION_GROUP_KOREAN, positionGroupFromLabel, TACTICAL_ROLES } from '@/lib/tacticalRoles'
+import { POSITION_GROUP_KOREAN, positionGroupFromLabel, roleOptionsFor } from '@/lib/tacticalRoles'
 import { useAnalysisStore } from '@/store/analysisStore'
 import type { Player } from '@/types/analysis'
 
@@ -35,9 +35,7 @@ export function PlayerForm({ player, index }: { player: Player; index: number })
   }
 
   const info = isStarter && formation ? positionInfoAt(formation, index) : null
-  const roleOptions = info
-    ? TACTICAL_ROLES[positionGroupFromLabel(info.label, info.line)].map((r) => ({ ...r, group: undefined as string | undefined }))
-    : allTacticalRoles().map((r) => ({ ...r, group: POSITION_GROUP_KOREAN[r.group] }))
+  const roleOptions = roleOptionsFor(info)
 
   return (
     <div className="space-y-1 rounded-md border border-transparent p-1 hover:border-border">
@@ -115,7 +113,7 @@ export function PlayerForm({ player, index }: { player: Player; index: number })
               <SelectItem value={NONE_VALUE}>선택 안 함</SelectItem>
               {roleOptions.map((r) => (
                 <SelectItem key={r.id} value={r.id}>
-                  {r.group ? `${r.label} · ${r.group}` : r.label}
+                  {r.groupLabel ? `${r.label} · ${r.groupLabel}` : r.label}
                 </SelectItem>
               ))}
             </SelectContent>

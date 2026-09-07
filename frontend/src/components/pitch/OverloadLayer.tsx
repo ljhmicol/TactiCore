@@ -34,7 +34,17 @@ export function OverloadLayer({ phase, orientation = 'portrait' }: OverloadLayer
             : { x: (x0 + x1) / 2, y: (y0 + y1) / 2 }
           return (
             <g key={`${z.channel}-${z.third}`}>
-              <rect x={rect.x} y={rect.y} width={rect.width} height={rect.height} fill={style.color} fillOpacity={style.opacity} />
+              <rect
+                x={rect.x}
+                y={rect.y}
+                width={rect.width}
+                height={rect.height}
+                fill={style.color}
+                fillOpacity={style.opacity}
+                stroke={style.color}
+                strokeOpacity={0.9}
+                strokeWidth={0.5}
+              />
               <text
                 x={label.x}
                 y={label.y}

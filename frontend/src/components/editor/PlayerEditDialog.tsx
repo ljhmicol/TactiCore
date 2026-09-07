@@ -2,14 +2,20 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from '
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { POSITION_LINE_KOREAN, positionInfoAt } from '@/lib/positions'
+import { roleOptionsFor } from '@/lib/tacticalRoles'
 import { POSITION_LINE_COLORS } from '@/lib/theme'
 import { useAnalysisStore } from '@/store/analysisStore'
 
+const NONE_VALUE = '__none__'
+
 /**
- * TO-DO 13번 — 피치의 선수 클릭(탭)으로 여는 인라인 편집. 우측 '선수' 목록
+ * TO-DO 13번 — 피치의 선수 클릭(탭)으로 여는 인라인 편집. '선수' 목록
  * (PlayerForm)과 같은 updatePlayer 액션을 공유해 어느 쪽에서 고쳐도 동일하다.
- * 등번호 검증 규칙(1~99)도 PlayerForm과 동일하게 유지한다.
+ * 등번호 검증 규칙(1~99)·전술 역할 드롭다운(TO-DO 20)도 PlayerForm과 동일하게
+ * 유지한다 — 여기서 열리는 선수는 항상 피치 위(=선발)이므로 포지션 그룹
+ * 필터링이 항상 적용된다.
  *
  * 포지션 코드·라인 색 칩은 편집 대상이 아니라 포메이션 슬롯에서 자동 도출한
  * 정보다(lib/positions.ts) — 피치 노드의 색·라벨과 동일 규칙으로 표시한다.
@@ -27,6 +33,8 @@ export function PlayerEditDialog() {
   const info = analysis && index >= 0 ? positionInfoAt(analysis.formation, index) : null
 
   if (!player) return null
+
+  const roleOptions = roleOptionsFor(info)
 
   const handleNumberChange = (raw: string) => {
     const n = Number(raw)
@@ -76,15 +84,38 @@ export function PlayerEditDialog() {
               />
             </div>
           </div>
-          <div>
-            <Label htmlFor={`edit-role-${player.id}`} className="text-xs text-muted-foreground">
-              역할
-            </Label>
-            <Input
-              id={`edit-role-${player.id}`}
-              value={player.role ?? ''}
-              onChange={(e) => updatePlayer(player.id, { role: e.target.value })}
-            />
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor={`edit-role-${player.id}`} className="text-xs text-muted-foreground">
+                메모
+              </Label>
+              <Input
+                id={`edit-role-${player.id}`}
+                value={player.role ?? ''}
+                onChange={(e) => updatePlayer(player.id, { role: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor={`edit-tactical-role-${player.id}`} className="text-xs text-muted-foreground">
+                전술 역할
+              </Label>
+              <Select
+                value={player.tacticalRole ?? NONE_VALUE}
+                onValueChange={(v) => updatePlayer(player.id, { tacticalRole: v === NONE_VALUE ? undefined : v })}
+              >
+                <SelectTrigger id={`edit-tactical-role-${player.id}`}>
+                  <SelectValue placeholder="선택 안 함" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={NONE_VALUE}>선택 안 함</SelectItem>
+                  {roleOptions.map((r) => (
+                    <SelectItem key={r.id} value={r.id}>
+                      {r.groupLabel ? `${r.label} · ${r.groupLabel}` : r.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
         </div>
         <DialogFooter>
