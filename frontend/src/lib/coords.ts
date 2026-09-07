@@ -51,3 +51,23 @@ export function transposeRect(
 ): { x: number; y: number; width: number; height: number } {
   return { x: 100 - y1, y: x0, width: y1 - y0, height: x1 - x0 }
 }
+
+/**
+ * 전술 대결 뷰(MatchupView)에서 "수비하는 쪽"의 압박 라인 y값을 정한다.
+ * A가 수비면 그대로, B가 수비면 미러링(100-y)해서 넘긴다.
+ *
+ * 백엔드에서 불러온 분석은 pressingLineY 미설정 시 undefined가 아니라
+ * null로 온다(Python None → JSON null) — `!== undefined`만 검사하면 null을
+ * "수동 지정값 0"으로 오인해 `100 - null`(JS가 null을 0으로 강제 변환해
+ * 100)이라는 잘못된 라인을 계산해버린다(2026-09-07 실제 버그 — 전술
+ * 대결에서 공수를 교대해도 한쪽 방향은 압박 라인이 항상 "매우 낮음"에
+ * 고정됐었다). `== null`로 null·undefined 둘 다 "미설정"으로 취급해야 한다.
+ */
+export function resolveDefendingPressingLineY(
+  aIsDefending: boolean,
+  dataAPressingLineY: number | null | undefined,
+  dataBPressingLineY: number | null | undefined,
+): number | undefined {
+  if (aIsDefending) return dataAPressingLineY ?? undefined
+  return dataBPressingLineY == null ? undefined : 100 - dataBPressingLineY
+}

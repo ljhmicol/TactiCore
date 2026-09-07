@@ -4,7 +4,7 @@ import { ChannelGrid } from '@/components/pitch/ChannelGrid'
 import { Pitch } from '@/components/pitch/Pitch'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { StaticPlayerNode } from '@/components/pitch/StaticPlayerNode'
-import { mirrorPoint } from '@/lib/coords'
+import { mirrorPoint, resolveDefendingPressingLineY } from '@/lib/coords'
 import { computeOverload } from '@/lib/overload'
 import type { Analysis, PhaseData, PhaseType, PlayerPosition } from '@/types/analysis'
 
@@ -52,9 +52,13 @@ export function MatchupView({
   // 압박 라인은 "수비하는 쪽"의 것만 보여준다 — 이 뷰의 관심사는 그 블록이
   // 어디서 시작되는지다. 값이 수동 지정돼 있으면 미러링해서 넘기고, 없으면
   // 이미 미러링된 좌표 배열을 그대로 넘겨 PressingLine이 자동 산출하게 둔다.
+  // null·undefined 처리의 실제 버그 이력은 resolveDefendingPressingLineY 참조.
   const defendingPositions = phaseA === 'defense' ? dataA.positions : positionsB
-  const defendingPressingLineY =
-    phaseA === 'defense' ? dataA.pressingLineY : dataB.pressingLineY !== undefined ? 100 - dataB.pressingLineY : undefined
+  const defendingPressingLineY = resolveDefendingPressingLineY(
+    phaseA === 'defense',
+    dataA.pressingLineY,
+    dataB.pressingLineY,
+  )
 
   const labelA = analysisA.match.homeTeam
   const labelB = analysisB.match.homeTeam
