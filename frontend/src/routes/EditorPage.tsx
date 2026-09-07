@@ -1,3 +1,4 @@
+import { ChevronDown } from 'lucide-react'
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 
@@ -148,25 +149,26 @@ export function EditorPage() {
             <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
           </section>
 
-          <details className="group rounded-md border border-border p-3" open>
-            <summary className="mb-2 cursor-pointer text-sm font-semibold text-foreground marker:content-['▶__'] group-open:marker:content-['▼__']">
-              선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})
+          <details className="group rounded-md border border-border" open>
+            <summary className="flex cursor-pointer list-none items-center justify-between rounded-md p-3 text-sm font-semibold text-foreground hover:bg-secondary [&::-webkit-details-marker]:hidden">
+              <span>선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})</span>
+              <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
             </summary>
-            <div className="space-y-2">
+            <div className="space-y-2 px-3 pb-3">
               {analysis.players.map((player, i) => (
                 <PlayerForm key={player.id} player={player} index={i} />
               ))}
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                disabled={analysis.players.length >= 23}
+                onClick={addPlayer}
+              >
+                선수 추가
+              </Button>
             </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              className="mt-2"
-              disabled={analysis.players.length >= 23}
-              onClick={addPlayer}
-            >
-              선수 추가
-            </Button>
           </details>
         </div>
       </div>
