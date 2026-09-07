@@ -34,8 +34,10 @@ import { useAnalysisStore } from '@/store/analysisStore'
  * 모바일(§11.2): 국면 탭 sticky, 레이어 칩 가로 스크롤(LayerToggleChips 자체 구현),
  * 하단 고정 액션 바. 데스크톱(§11.1)에서는 2단 그리드로 배치된다.
  *
- * 선수 목록은 기본 펼침이다(2026-09-07) — 접어두면 눈에 안 띄어 못 찾는다는
- * 피드백이 있었다. 필요하면 접을 수 있는 <details>는 유지한다.
+ * 선수 목록은 기본 접힘이다(2026-09-07 확정) — 한때 기본 펼침으로 바꿨다가
+ * 사용자 요청으로 다시 접힘으로 되돌렸다. 못 찾는 문제는 펼침 여부가
+ * 아니라 헤더가 클릭 가능해 보이지 않던 게 원인이었어서, 셰브런 아이콘 +
+ * hover 배경으로 아코디언처럼 보이게 하는 쪽으로 해결했다.
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
@@ -149,7 +151,7 @@ export function EditorPage() {
             <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
           </section>
 
-          <details className="group rounded-md border border-border" open>
+          <details className="group rounded-md border border-border">
             <summary className="flex cursor-pointer list-none items-center justify-between rounded-md p-3 text-sm font-semibold text-foreground hover:bg-secondary [&::-webkit-details-marker]:hidden">
               <span>선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})</span>
               <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
