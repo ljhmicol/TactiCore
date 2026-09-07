@@ -60,6 +60,7 @@ interface AnalysisStore {
   isMorphing: boolean
   isDirty: boolean
   drawTool: DrawTool // 전술 그리기 도구 (화면 설정 — 저장 대상 아님)
+  curvedDraw: boolean // 다음에 그릴 화살표를 곡선으로 — 화면 설정, 저장 대상 아님(2026-09-07)
   editingPlayerId: string | null // 피치의 선수 클릭으로 연 편집 다이얼로그
 
   loadAnalysis: (a: Analysis) => void
@@ -70,8 +71,9 @@ interface AnalysisStore {
   movePlayer: (playerId: string, x: number, y: number) => void // 현재 국면에만 반영
   moveOpponent: (slot: number, x: number, y: number) => void
   setDrawTool: (t: DrawTool) => void
+  toggleCurvedDraw: () => void
   setEditingPlayer: (id: string | null) => void
-  addAnnotation: (type: AnnotationType, from: Point, to: Point) => void // 현재 국면에 추가
+  addAnnotation: (type: AnnotationType, from: Point, to: Point, curved?: boolean) => void // 현재 국면에 추가
   removeAnnotation: (id: string) => void
   addOpponents: () => void // 현재 국면에 상대팀 11명 기본 배치 추가 (자팀 포메이션을 하프라인 기준 대칭)
   removeOpponents: () => void
@@ -107,6 +109,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   isMorphing: false,
   isDirty: false,
   drawTool: 'select',
+  curvedDraw: false,
   editingPlayerId: null,
 
   loadAnalysis: (a) =>
@@ -120,6 +123,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       ghostAutoVisible: false,
       isDirty: false,
       drawTool: 'select',
+      curvedDraw: false,
       editingPlayerId: null,
     }),
 
@@ -179,9 +183,11 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
 
   setDrawTool: (t) => set({ drawTool: t }),
 
+  toggleCurvedDraw: () => set((s) => ({ curvedDraw: !s.curvedDraw })),
+
   setEditingPlayer: (id) => set({ editingPlayerId: id }),
 
-  addAnnotation: (type, from, to) => {
+  addAnnotation: (type, from, to, curved) => {
     const { analysis, currentPhase } = get()
     if (!analysis) return
     const phase = analysis.phases[currentPhase]
@@ -192,7 +198,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
           ...analysis.phases,
           [currentPhase]: {
             ...phase,
-            annotations: [...phase.annotations, { id: nanoid(), type, from, to }],
+            annotations: [...phase.annotations, { id: nanoid(), type, from, to, curved: curved || undefined }],
           },
         },
       },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { ANNOTATION_MIN_LENGTH, arrowGeometry } from '@/lib/annotations'
+import { ANNOTATION_MIN_LENGTH, arrowGeometry, curvedArrowGeometry } from '@/lib/annotations'
 import { analysisSchema } from '@/lib/schema'
 
 const PITCH_LENGTH_M = 105
@@ -38,6 +38,39 @@ describe('arrowGeometry', () => {
 
   it('최소 길이 기준은 실수 클릭 수준으로 잡혀 있다', () => {
     expect(ANNOTATION_MIN_LENGTH).toBeLessThan(4)
+  })
+})
+
+describe('curvedArrowGeometry', () => {
+  it('화살촉 tip은 정확히 to에 놓인다', () => {
+    const geo = curvedArrowGeometry({ x: 20, y: 80 }, { x: 40, y: 40 })
+    expect(geo.head[0]).toEqual({ x: 40, y: 40 })
+  })
+
+  it('경로는 from에서 시작해 control을 거쳐 to로 끝나는 2차 베지어다', () => {
+    const from = { x: 20, y: 80 }
+    const to = { x: 40, y: 40 }
+    const geo = curvedArrowGeometry(from, to)
+    expect(geo.path).toBe(`M ${from.x} ${from.y} Q ${geo.control.x} ${geo.control.y} ${to.x} ${to.y}`)
+  })
+
+  // 왼쪽 절반(중앙 x=50보다 작음)에서 시작·끝나는 화살표는 왼쪽 터치라인
+  // 쪽(x가 더 작은 쪽)으로 부풀어야 "바깥으로 도는" 오버랩처럼 보인다.
+  it('왼쪽 절반의 화살표는 왼쪽(터치라인)으로 부푼다', () => {
+    const geo = curvedArrowGeometry({ x: 20, y: 80 }, { x: 20, y: 40 })
+    expect(geo.control.x).toBeLessThan(20)
+  })
+
+  it('오른쪽 절반의 화살표는 오른쪽(터치라인)으로 부푼다', () => {
+    const geo = curvedArrowGeometry({ x: 80, y: 80 }, { x: 80, y: 40 })
+    expect(geo.control.x).toBeGreaterThan(80)
+  })
+
+  it('길이 0 입력에서도 죽지 않는다', () => {
+    const p = { x: 50, y: 50 }
+    const geo = curvedArrowGeometry(p, p)
+    expect(geo.control).toEqual(p)
+    expect(geo.head).toEqual([p, p, p])
   })
 })
 
@@ -88,5 +121,22 @@ describe('annotations 스키마', () => {
     const bad = structuredClone(withArrow)
     bad.phases.base.annotations[0].type = 'dribble'
     expect(analysisSchema.safeParse(bad).success).toBe(false)
+  })
+
+  it('curved 필드는 선택값이고, 있으면 그대로 보존된다', () => {
+    const withCurved = {
+      ...base,
+      phases: {
+        base: {
+          positions,
+          comment: '',
+          annotations: [{ id: 'a1', type: 'run', from: { x: 10, y: 10 }, to: { x: 40, y: 30 }, curved: true }],
+        },
+        attack: { positions, comment: '' },
+        defense: { positions, comment: '' },
+      },
+    }
+    const parsed = analysisSchema.parse(withCurved)
+    expect(parsed.phases.base.annotations[0].curved).toBe(true)
   })
 })

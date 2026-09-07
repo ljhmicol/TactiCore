@@ -16,6 +16,7 @@ const annotationSchema = z.object({
   type: z.enum(['run', 'pass']),
   from: pointSchema,
   to: pointSchema,
+  curved: z.boolean().optional(),
 })
 
 const playerSchema = z.object({

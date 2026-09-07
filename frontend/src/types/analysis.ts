@@ -37,6 +37,7 @@ export interface Annotation {
   type: AnnotationType
   from: Point
   to: Point
+  curved?: boolean // 곡선 화살표(오버랩 런 등) — 없으면 직선(TO-DO, 2026-09-07)
 }
 
 export interface PhaseData {

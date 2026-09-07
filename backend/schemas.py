@@ -35,6 +35,7 @@ class AnnotationIn(BaseModel):
     type: Literal["run", "pass"]
     from_: Point = Field(alias="from")
     to: Point
+    curved: Optional[bool] = None
 
 
 class MatchInfo(BaseModel):

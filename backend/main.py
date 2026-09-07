@@ -13,21 +13,23 @@ from routers import analyses
 Base.metadata.create_all(bind=engine)
 
 
-def _ensure_players_tactical_role_column() -> None:
+def _ensure_column(table: str, column: str, ddl_type: str) -> None:
     """create_all은 새 테이블만 만들고 기존 테이블에 컬럼을 추가하지 못한다.
 
-    players.tactical_role(TO-DO 20)은 기존에 만들어진 DB 파일에는 없을 수
-    있는 컬럼이라, 없으면 여기서 한 번 ALTER TABLE로 채워 넣는다. 이미 있으면
-    아무 것도 하지 않는다(재기동마다 안전하게 반복 실행 가능).
+    이미 만들어진 DB 파일에는 없을 수 있는 컬럼을, 없으면 여기서 한 번
+    ALTER TABLE로 채워 넣는다. 이미 있으면 아무 것도 하지 않는다(재기동마다
+    안전하게 반복 실행 가능). players.tactical_role(TO-DO 20)에서 처음
+    쓴 패턴 — annotations.curved(TO-DO, 2026-09-07)도 같은 이유로 필요.
     """
     with engine.connect() as conn:
-        columns = {row[1] for row in conn.execute(text("PRAGMA table_info(players)"))}
-        if "tactical_role" not in columns:
-            conn.execute(text("ALTER TABLE players ADD COLUMN tactical_role VARCHAR"))
+        columns = {row[1] for row in conn.execute(text(f"PRAGMA table_info({table})"))}
+        if column not in columns:
+            conn.execute(text(f"ALTER TABLE {table} ADD COLUMN {column} {ddl_type}"))
             conn.commit()
 
 
-_ensure_players_tactical_role_column()
+_ensure_column("players", "tactical_role", "VARCHAR")
+_ensure_column("annotations", "curved", "BOOLEAN")
 
 app = FastAPI(title="TactiCore API", version=settings.app_version)
 

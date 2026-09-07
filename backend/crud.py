@@ -133,6 +133,7 @@ def upsert_analysis(
                     from_y=ann.from_.y,
                     to_x=ann.to.x,
                     to_y=ann.to.y,
+                    curved=ann.curved,
                 )
             )
 
@@ -174,6 +175,7 @@ def to_analysis_dict(row: models.Analysis) -> dict:
                     "type": a.ann_type,
                     "from": {"x": a.from_x, "y": a.from_y},
                     "to": {"x": a.to_x, "y": a.to_y},
+                    "curved": a.curved,
                 }
                 for a in phase.annotations
             ],

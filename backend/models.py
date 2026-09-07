@@ -5,6 +5,7 @@ ORM 레벨 삭제 전파를 위해 둘 다 필요하다.
 """
 
 from sqlalchemy import (
+    Boolean,
     Column,
     Float,
     ForeignKey,
@@ -135,5 +136,9 @@ class Annotation(Base):
     from_y = Column(Float, nullable=False)
     to_x = Column(Float, nullable=False)
     to_y = Column(Float, nullable=False)
+    # 곡선 화살표(오버랩 런 등) 여부. 기존 DB에는 없을 수 있는 컬럼이라
+    # main.py에서 수동 ALTER TABLE로 채운다 — players.tactical_role과 같은
+    # 이유(create_all은 기존 테이블에 컬럼을 추가하지 못한다), TO-DO 2026-09-07
+    curved = Column(Boolean)
 
     phase = relationship("Phase", back_populates="annotations")
