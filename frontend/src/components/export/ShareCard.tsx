@@ -62,17 +62,18 @@ export const ShareCard = forwardRef<HTMLDivElement, ShareCardProps>(function Sha
   const layers = useAnalysisStore((s) => s.layers)
   const phase = analysis.phases[phaseType]
   const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
-  // 국면 코멘트는 감독 프리셋 기준 200자를 훌쩍 넘겨 카드에 넣기엔 항상 너무
-  // 길었다(사용자 리포트: "png보니까 짤린다"). 코멘트 대신 '종합 평가'(짧은
-  // 요약 문구, 2단계 §10)만 쓰기로 함 — 2026-09-02 사용자 결정.
   const cardHeight = ratio === '1:1' ? 1080 : 1350
   const bench = analysis.players.filter((p) => !phase.positions.some((pos) => pos.playerId === p.id))
-  // "…"으로 잘라내는 방식은 여전히 안 좋아 보인다는 피드백 — 글자 수로 잘라
-  // 말줄임표를 붙이는 대신 박스 높이에 맞을 때까지 폰트 크기를 줄인다. 그래도
-  // 극단적으로 긴 입력(요약이 아니라 사실상 문단)에 대비해 400자에서 한 번은
-  // 잘라낸다 — 이 한도는 정상적인 '짧은 요약' 사용에서는 걸릴 일이 없다.
-  const bodyText = analysis.summary.length > 400 ? `${analysis.summary.slice(0, 399).trimEnd()}…` : analysis.summary
-  const bodyBoxHeight = ratio === '1:1' ? (bench.length > 0 ? 150 : 190) : bench.length > 0 ? 190 : 240
+  // 국면별로 다른 텍스트를 그대로 보여준다 — 기본 국면은 종합 평가, 공격·수비는
+  // 그 국면 자체의 코멘트(2026-09-02 사용자 결정). 원본 텍스트는 절대 줄이지
+  // 않는다 — "png에만" 맞추는 건 아래 폰트 자동 축소가 담당한다.
+  const rawBodyText = phaseType === 'base' ? analysis.summary : phase.comment
+  // "…"으로 잘라내는 방식은 안 좋아 보인다는 피드백 — 글자 수로 잘라 말줄임표를
+  // 붙이는 대신 박스 높이에 맞을 때까지 폰트 크기를 줄인다. 그래도 극단적으로
+  // 긴 입력에 대비해 500자에서 한 번은 잘라낸다 — 지금 있는 국면 코멘트 중
+  // 가장 긴 것도 이 한도 안에 들어온다.
+  const bodyText = rawBodyText.length > 500 ? `${rawBodyText.slice(0, 499).trimEnd()}…` : rawBodyText
+  const bodyBoxHeight = ratio === '1:1' ? (bench.length > 0 ? 170 : 210) : bench.length > 0 ? 220 : 270
   const { ref: bodyRef, fontSize: bodyFontSize } = useFitFontSize(bodyText, bodyBoxHeight, 32, 16)
 
   return (
