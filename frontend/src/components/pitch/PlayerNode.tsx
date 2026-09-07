@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { clampCoord, clientToPitch } from '@/lib/coords'
 import { circularRadius } from '@/lib/pitchMarkings'
 import { positionInfoAt } from '@/lib/positions'
+import { findTacticalRole } from '@/lib/tacticalRoles'
 import { PLAYER_COLORS, POSITION_LINE_COLORS } from '@/lib/theme'
 import { useAnalysisStore } from '@/store/analysisStore'
 import type { Player, Point } from '@/types/analysis'
@@ -33,6 +34,10 @@ const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
  * 노드 색은 포지션 라인별로 칠한다(2026-09-01 사용자 요청 — GK 노랑/DF 파랑/
  * MF 초록/FW 빨강). 라인·포지션 코드는 포메이션 이름과 players 순서에서
  * 자동 도출하며(lib/positions.ts), 도출 불가 시 기존 단색으로 폴백한다.
+ *
+ * 원 위 라벨은 전술 역할이 지정돼 있으면 역할 이름, 없으면 포지션 코드를
+ * 보여준다(2026-09-07 — "필드에서도 역할이 한눈에 보이게"). 역할이 포지션도
+ * 함축하므로 둘 다 표시하지 않는다.
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
@@ -44,6 +49,13 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const transition = dragging ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
   const info = formation ? positionInfoAt(formation, index) : null
   const lineColor = info ? POSITION_LINE_COLORS[info.line] : null
+  // 전술 역할이 지정돼 있으면 포지션 코드(LB, CB…) 대신 역할 이름을 원 위에
+  // 보여준다 — "필드에서도 역할이 한눈에 보이게" 피드백(2026-09-07). 역할이
+  // 포지션 정보를 이미 함축하므로(예: 타겟 포워드=ST) 코드와 나란히 두지
+  // 않고 대체한다. 역할 라벨이 코드보다 길어서 폰트를 한 단계 줄인다.
+  const role = findTacticalRole(player.tacticalRole)
+  const topLabel = role?.label ?? info?.label
+  const topLabelFontSize = role ? 1.4 : 1.7
 
   const handlePan = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (!svgRef.current) return
@@ -70,18 +82,18 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
         strokeOpacity={PLAYER_COLORS.own.strokeOpacity}
         strokeWidth={0.3}
       />
-      {info && (
+      {topLabel && (
         <motion.text
           initial={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
           animate={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
           transition={transition}
           fill={PLAYER_COLORS.own.fill}
           fillOpacity={0.9}
-          fontSize={1.7}
+          fontSize={topLabelFontSize}
           textAnchor="middle"
           style={{ userSelect: 'none' }}
         >
-          {info.label}
+          {topLabel}
         </motion.text>
       )}
       <motion.text

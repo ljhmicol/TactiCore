@@ -39,11 +39,15 @@ import { useAnalysisStore } from '@/store/analysisStore'
  * 아니라 헤더가 클릭 가능해 보이지 않던 게 원인이었어서, 셰브런 아이콘 +
  * hover 배경으로 아코디언처럼 보이게 하는 쪽으로 해결했다.
  *
- * 선수 목록은 왼쪽 컬럼(피치 쪽)에 있다(2026-09-07) — 원래 오른쪽(경기
- * 정보·코멘트 옆)에 있었는데 피치와 더 가까운 왼쪽으로 옮겨달라는 요청.
- * 목록 내용물 div에만 `max-h-[45vh] overflow-y-auto`를 줘서 선수가
- * 많아져도(최대 23명) 그 박스 안에서만 스크롤되고 페이지 전체 높이는
- * 늘어나지 않는다 — 헤더(summary)는 스크롤 대상 밖에 있어 항상 보인다.
+ * 선수 목록은 피치의 왼쪽에 별도 컬럼으로 있다(2026-09-07, 2차 수정 —
+ * "아예 필드 왼쪽이면 좋겠어") — 처음엔 피치와 같은 컬럼 안에 아래로
+ * 붙였는데, 그게 아니라 피치 옆(왼쪽)에 나란히 두길 원했다. 데스크톱
+ * 그리드는 [선수 목록 300px] [피치 flex] [경기정보 380px] 3열이고,
+ * DOM 순서는 피치 → 선수 목록 → 경기정보를 유지한 채(모바일 1열 스택 시
+ * 피치가 먼저 보이도록) `lg:order-first`로 데스크톱에서만 맨 왼쪽으로
+ * 시각적으로 옮긴다. 목록 내용물 div에만 `overflow-y-auto`를 줘서
+ * 선수가 많아져도(최대 23명) 그 박스 안에서만 스크롤되고 페이지 전체
+ * 높이는 늘어나지 않는다 — 헤더(summary)는 스크롤 대상 밖이라 항상 보인다.
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
@@ -97,7 +101,7 @@ export function EditorPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(480px,1fr)_400px]">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_minmax(420px,1fr)_380px]">
         <div className="flex flex-col items-center gap-3">
           <div className="sticky top-0 z-10 w-full max-w-md bg-background py-2">
             <PhaseTabs />
@@ -145,15 +149,17 @@ export function EditorPage() {
               {hasOpponent ? '상대팀 제거' : '상대팀 추가'}
             </Button>
           </div>
+        </div>
 
-          <details className="group w-full max-w-md rounded-md border border-border">
+        <div className="w-full lg:order-first">
+          <details className="group rounded-md border border-border">
             <summary className="flex cursor-pointer list-none items-center justify-between rounded-md p-3 text-sm font-semibold text-foreground hover:bg-secondary [&::-webkit-details-marker]:hidden">
               <span>선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})</span>
               <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180" />
             </summary>
             {/* 목록 자체만 스크롤된다 — 선수가 많아져도(최대 23명) 페이지 전체가
                 늘어나지 않고 이 박스 안에서만 스크롤바가 생긴다 (2026-09-07). */}
-            <div className="max-h-[45vh] space-y-2 overflow-y-auto px-3 pb-3">
+            <div className="max-h-[70vh] space-y-2 overflow-y-auto px-3 pb-3">
               {analysis.players.map((player, i) => (
                 <PlayerForm key={player.id} player={player} index={i} />
               ))}
