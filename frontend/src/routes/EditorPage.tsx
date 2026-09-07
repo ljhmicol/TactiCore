@@ -31,7 +31,10 @@ import { useAnalysisStore } from '@/store/analysisStore'
  * 레이어 z-순서(2단계 §9): 채널 그리드 → 콤팩트니스 → 압박 라인 → 오버로드 → Ghost → 선수 노드(최상단).
  *
  * 모바일(§11.2): 국면 탭 sticky, 레이어 칩 가로 스크롤(LayerToggleChips 자체 구현),
- * 선수 목록 기본 접힘, 하단 고정 액션 바. 데스크톱(§11.1)에서는 2단 그리드로 배치된다.
+ * 하단 고정 액션 바. 데스크톱(§11.1)에서는 2단 그리드로 배치된다.
+ *
+ * 선수 목록은 기본 펼침이다(2026-09-07) — 접어두면 눈에 안 띄어 못 찾는다는
+ * 피드백이 있었다. 필요하면 접을 수 있는 <details>는 유지한다.
  */
 export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
@@ -145,8 +148,8 @@ export function EditorPage() {
             <CommentPanel phase={currentPhase} comment={phase.comment} summary={analysis.summary} />
           </section>
 
-          <details className="group">
-            <summary className="mb-2 cursor-pointer text-sm font-semibold text-foreground">
+          <details className="group rounded-md border border-border p-3" open>
+            <summary className="mb-2 cursor-pointer text-sm font-semibold text-foreground marker:content-['▶__'] group-open:marker:content-['▼__']">
               선수 (선발 11 + 벤치 {Math.max(0, analysis.players.length - 11)})
             </summary>
             <div className="space-y-2">
