@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { exportCard } from '@/lib/exportImage'
 import type { Analysis, PhaseType } from '@/types/analysis'
 
-/** PNG 카드 내보내기 UI. 비율(1:1/4:5)을 고른다. 하단 텍스트는 항상 '종합 평가'(짧은 요약)를 쓴다. */
+/** PNG 카드 내보내기 UI. 비율(1:1/4:5)을 고른다. 하단 텍스트는 국면별로 다르다 — 기본은 종합 평가, 공격·수비는 해당 국면 코멘트. */
 export function ExportControls({ analysis, phase }: { analysis: Analysis; phase: PhaseType }) {
   const [ratio, setRatio] = useState<'1:1' | '4:5'>('1:1')
   const [exporting, setExporting] = useState(false)

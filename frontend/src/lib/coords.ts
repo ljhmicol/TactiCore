@@ -15,3 +15,13 @@ export function clientToPitch(svg: SVGSVGElement, clientX: number, clientY: numb
 export function clampCoord(v: number): number {
   return Math.min(99.9, Math.max(0, v))
 }
+
+/**
+ * 저장된 분석은 항상 "자팀 골 = y=100" 기준이다(2단계 §3). 전술 대결 뷰에서
+ * 두 팀을 한 피치에 겹칠 때, 상대로 지정된 쪽은 이 180도 회전을 거쳐야
+ * 자기 골문이 상대가 공격하는 방향(y=0)에 놓인다. y만 뒤집으면 좌우 플랭크가
+ * 실제와 반대로 그려지므로 x도 함께 뒤집는다 — 16번 항목, TO-DO-LIST.md 참조.
+ */
+export function mirrorPoint(p: { x: number; y: number }): { x: number; y: number } {
+  return { x: 100 - p.x, y: 100 - p.y }
+}

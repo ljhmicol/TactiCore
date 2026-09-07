@@ -5,6 +5,7 @@ import { AnalysesPage } from '@/routes/AnalysesPage'
 import { AnalysisDetailPage } from '@/routes/AnalysisDetailPage'
 import { EditorPage } from '@/routes/EditorPage'
 import { NewAnalysisPage } from '@/routes/NewAnalysisPage'
+import { VersusPage } from '@/routes/VersusPage'
 
 const queryClient = new QueryClient({
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
@@ -25,6 +26,9 @@ function App() {
             <Link to="/analyses" className="hover:text-foreground">
               저장 목록
             </Link>
+            <Link to="/versus" className="hover:text-foreground">
+              전술 대결
+            </Link>
           </nav>
         </div>
         <Routes>
@@ -32,6 +36,7 @@ function App() {
           <Route path="/new" element={<NewAnalysisPage />} />
           <Route path="/analyses" element={<AnalysesPage />} />
           <Route path="/analyses/:id" element={<AnalysisDetailPage />} />
+          <Route path="/versus" element={<VersusPage />} />
         </Routes>
       </BrowserRouter>
     </QueryClientProvider>
