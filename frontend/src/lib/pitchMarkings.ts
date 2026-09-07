@@ -33,3 +33,11 @@ export const PENALTY_SPOT_Y = toY(PENALTY_SPOT_DIST_M)
 export function circularRadius(rUnits: number) {
   return { rx: rUnits, ry: rUnits * (PITCH_WIDTH_M / PITCH_LENGTH_M) }
 }
+
+/**
+ * 가로 모드(TO-DO 21)에서는 화면 x축이 원래 y축(105m, 긴 쪽) 역할을 하므로
+ * 보정 비율의 rx/ry가 서로 바뀐다 — portrait용 {rx,ry}를 그대로 스왑하면 된다.
+ */
+export function swapForLandscape<T extends { rx: number; ry: number }>(r: T): T {
+  return { ...r, rx: r.ry, ry: r.rx }
+}

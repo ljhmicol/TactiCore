@@ -25,3 +25,29 @@ export function clampCoord(v: number): number {
 export function mirrorPoint(p: { x: number; y: number }): { x: number; y: number } {
   return { x: 100 - p.x, y: 100 - p.y }
 }
+
+/**
+ * 데이터 좌표(x=터치라인, y=공격 방향)를 가로 방향 화면 좌표로 옮긴다 —
+ * 전술 대결 뷰(TO-DO 21)를 세로 피치보다 크게 보여주기 위함이다. y=0
+ * (공격 방향 골문)을 화면 오른쪽(x=100)에 두어 "공격은 오른쪽으로" 라는
+ * 익숙한 방향으로 읽히게 한다. 이 자체는 회전이 아니라 좌표 두 축을
+ * 치환하는 것이라 텍스트가 기울어지지 않는다 — SVG transform으로 그룹을
+ * 통째로 돌리면 글자도 같이 돌아가 버리는 문제를 피한다.
+ */
+export function transposePoint(p: { x: number; y: number }): { x: number; y: number } {
+  return { x: 100 - p.y, y: p.x }
+}
+
+/**
+ * 데이터 좌표계의 사각형(x0~x1, y0~y1)을 transposePoint와 같은 규칙으로
+ * 옮긴 화면 사각형을 돌려준다. ChannelGrid·OverloadLayer처럼 "구역"을
+ * 그리는 컴포넌트가 가로 모드에서 재사용한다.
+ */
+export function transposeRect(
+  x0: number,
+  x1: number,
+  y0: number,
+  y1: number,
+): { x: number; y: number; width: number; height: number } {
+  return { x: 100 - y1, y: x0, width: y1 - y0, height: x1 - x0 }
+}

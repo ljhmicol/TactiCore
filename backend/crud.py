@@ -88,7 +88,11 @@ def upsert_analysis(
     player_map: dict[str, models.Player] = {}
     for p in payload.players:
         player = models.Player(
-            client_id=p.id, name=p.name, number=p.number, role=p.role
+            client_id=p.id,
+            name=p.name,
+            number=p.number,
+            role=p.role,
+            tactical_role=p.tactical_role,
         )
         row.players.append(player)
         player_map[p.id] = player
@@ -193,6 +197,7 @@ def to_analysis_dict(row: models.Analysis) -> dict:
                 "name": p.name,
                 "number": p.number,
                 "role": p.role,
+                "tactical_role": p.tactical_role,
             }
             for p in row.players
         ],

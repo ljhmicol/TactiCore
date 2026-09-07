@@ -23,6 +23,9 @@ const playerSchema = z.object({
   name: z.string(),
   number: z.number().int().min(1).max(99),
   role: z.string().optional(),
+  // 전술 역할(FM 스타일 — 딥라잉 포워드, 타겟맨 등). lib/tacticalRoles.ts의
+  // id 하나. role(자유 메모)과 별개 필드다 — TO-DO 20번.
+  tacticalRole: z.string().optional(),
 })
 
 const matchInfoSchema = z.object({

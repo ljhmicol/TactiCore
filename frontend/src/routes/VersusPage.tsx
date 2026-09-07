@@ -129,7 +129,7 @@ export function VersusPage() {
       ) : analysisA.isError || analysisB.isError || !analysisA.data || !analysisB.data ? (
         <p className="text-sm text-destructive">분석을 불러오지 못했습니다.</p>
       ) : (
-        <div className="mx-auto h-[70vh] w-full max-w-md">
+        <div className="mx-auto h-[82vh] w-full max-w-6xl">
           <MatchupView
             analysisA={analysisA.data}
             analysisB={analysisB.data}

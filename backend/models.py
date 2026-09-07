@@ -62,6 +62,10 @@ class Player(Base):
     name = Column(String, nullable=False)
     number = Column(Integer, nullable=False)
     role = Column(String)
+    # 전술 역할(FM 스타일) id — frontend/src/lib/tacticalRoles.ts 참조. role(자유
+    # 메모)과 별개 컬럼. 기존 DB에는 없을 수 있어 main.py에서 수동 ALTER TABLE로
+    # 채운다(create_all은 기존 테이블에 컬럼을 추가하지 못한다) — TO-DO 20
+    tactical_role = Column(String)
 
     analysis = relationship("Analysis", back_populates="players")
     positions = relationship(

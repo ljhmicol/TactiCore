@@ -1,9 +1,11 @@
+import { AdvantageBadge } from '@/components/versus/AdvantageBadge'
 import { ChannelGrid } from '@/components/pitch/ChannelGrid'
 import { OverloadLayer } from '@/components/pitch/OverloadLayer'
 import { Pitch } from '@/components/pitch/Pitch'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { StaticPlayerNode } from '@/components/pitch/StaticPlayerNode'
 import { mirrorPoint } from '@/lib/coords'
+import { computeOverload } from '@/lib/overload'
 import type { Analysis, PhaseData, PhaseType, PlayerPosition } from '@/types/analysis'
 
 interface MatchupViewProps {
@@ -54,39 +56,56 @@ export function MatchupView({
   const defendingPressingLineY =
     phaseA === 'defense' ? dataA.pressingLineY : dataB.pressingLineY !== undefined ? 100 - dataB.pressingLineY : undefined
 
+  const labelA = analysisA.match.homeTeam
+  const labelB = analysisB.match.homeTeam
+  const zones = computeOverload(syntheticPhase)
+
   return (
-    <Pitch>
-      {showChannelGrid && <ChannelGrid halfSpaces />}
-      {showPressingLine && <PressingLine positions={defendingPositions} pressingLineY={defendingPressingLineY} />}
-      {showOverload && <OverloadLayer phase={syntheticPhase} />}
-      {analysisA.players.map((player, index) => {
-        const pos = dataA.positions.find((p) => p.playerId === player.id)
-        if (!pos) return null
-        return (
-          <StaticPlayerNode
-            key={`a-${player.id}`}
-            player={player}
-            position={pos}
-            formation={analysisA.formation}
-            index={index}
-            variant="A"
-          />
-        )
-      })}
-      {analysisB.players.map((player, index) => {
-        const pos = positionsB.find((p) => p.playerId === player.id)
-        if (!pos) return null
-        return (
-          <StaticPlayerNode
-            key={`b-${player.id}`}
-            player={player}
-            position={pos}
-            formation={analysisB.formation}
-            index={index}
-            variant="B"
-          />
-        )
-      })}
-    </Pitch>
+    <div className="flex h-full flex-col gap-3">
+      {showOverload && <AdvantageBadge zones={zones} labelA={labelA} labelB={labelB} />}
+      <div className="min-h-0 flex-1">
+        <Pitch orientation="landscape">
+          {showChannelGrid && <ChannelGrid halfSpaces orientation="landscape" />}
+          {showPressingLine && (
+            <PressingLine
+              positions={defendingPositions}
+              pressingLineY={defendingPressingLineY}
+              orientation="landscape"
+            />
+          )}
+          {showOverload && <OverloadLayer phase={syntheticPhase} orientation="landscape" />}
+          {analysisA.players.map((player, index) => {
+            const pos = dataA.positions.find((p) => p.playerId === player.id)
+            if (!pos) return null
+            return (
+              <StaticPlayerNode
+                key={`a-${player.id}`}
+                player={player}
+                position={pos}
+                formation={analysisA.formation}
+                index={index}
+                variant="A"
+                orientation="landscape"
+              />
+            )
+          })}
+          {analysisB.players.map((player, index) => {
+            const pos = positionsB.find((p) => p.playerId === player.id)
+            if (!pos) return null
+            return (
+              <StaticPlayerNode
+                key={`b-${player.id}`}
+                player={player}
+                position={pos}
+                formation={analysisB.formation}
+                index={index}
+                variant="B"
+                orientation="landscape"
+              />
+            )
+          })}
+        </Pitch>
+      </div>
+    </div>
   )
 }

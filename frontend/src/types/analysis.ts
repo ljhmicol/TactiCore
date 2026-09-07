@@ -20,7 +20,8 @@ export interface Player {
   id: string // 프론트가 생성 (nanoid). 저장·재로드해도 불변
   name: string
   number: number // 1~99
-  role?: string
+  role?: string // 자유 메모
+  tacticalRole?: string // lib/tacticalRoles.ts의 role id — TO-DO 20
 }
 
 export interface PlayerPosition extends Point {

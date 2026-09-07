@@ -60,6 +60,7 @@ class PlayerIn(BaseModel):
     name: str = Field(min_length=1)
     number: int = Field(ge=1, le=99)
     role: Optional[str] = None
+    tactical_role: Optional[str] = None
 
 
 class PhaseIn(BaseModel):
