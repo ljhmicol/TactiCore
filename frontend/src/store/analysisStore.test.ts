@@ -73,3 +73,27 @@ describe('analysisStore — 벤치 선수', () => {
     expect(useAnalysisStore.getState().analysis!.players.length).toBeLessThanOrEqual(23)
   })
 })
+
+/** 로고 클릭 시 "처음 화면으로" — 로드된 분석과 관련 임시 상태를 비운다. */
+describe('analysisStore — closeAnalysis', () => {
+  it('analysis를 null로 되돌리고 국면·더러움 상태를 초기화한다', () => {
+    const analysis = createEmptyAnalysis('4-3-3', {
+      matchName: '테스트',
+      homeTeam: '홈',
+      awayTeam: '원정',
+      matchDate: '2026-09-01',
+      analyzedTeam: 'home',
+    })
+    useAnalysisStore.getState().loadAnalysis(analysis)
+    useAnalysisStore.getState().switchPhase('attack')
+    useAnalysisStore.getState().updatePlayer(analysis.players[0].id, { name: '수정됨' })
+
+    useAnalysisStore.getState().closeAnalysis()
+
+    const state = useAnalysisStore.getState()
+    expect(state.analysis).toBeNull()
+    expect(state.currentPhase).toBe('base')
+    expect(state.previousPhase).toBeNull()
+    expect(state.isDirty).toBe(false)
+  })
+})

@@ -63,6 +63,7 @@ interface AnalysisStore {
   editingPlayerId: string | null // 피치의 선수 클릭으로 연 편집 다이얼로그
 
   loadAnalysis: (a: Analysis) => void
+  closeAnalysis: () => void // 로고 클릭 등 "처음 화면으로" — 로드된 분석을 비운다(2026-09-07)
   setPhase: (p: PhaseType) => void
   switchPhase: (p: PhaseType) => void // 국면 탭 클릭 — isMorphing/Ghost 타이밍까지 함께 처리
   setIsMorphing: (v: boolean) => void
@@ -110,6 +111,17 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
 
   loadAnalysis: (a) =>
     set({ analysis: a, currentPhase: 'base', previousPhase: null, isDirty: false, editingPlayerId: null }),
+
+  closeAnalysis: () =>
+    set({
+      analysis: null,
+      currentPhase: 'base',
+      previousPhase: null,
+      ghostAutoVisible: false,
+      isDirty: false,
+      drawTool: 'select',
+      editingPlayerId: null,
+    }),
 
   setPhase: (p) => set({ currentPhase: p }),
 
