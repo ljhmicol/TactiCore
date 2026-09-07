@@ -1,4 +1,4 @@
-import { autoPressingLine } from '@/lib/compactness'
+import { autoPressingLine, pressingLineLevel } from '@/lib/compactness'
 import { LAYER_COLORS } from '@/lib/theme'
 import type { PlayerPosition } from '@/types/analysis'
 
@@ -34,7 +34,7 @@ export function PressingLine({ positions, pressingLineY, orientation = 'portrait
     <g>
       <line {...line} stroke={LAYER_COLORS.pressingLine.color} strokeWidth={LAYER_COLORS.pressingLine.width} />
       <text x={label.x} y={label.y} fill={LAYER_COLORS.pressingLine.color} fontSize={2} textAnchor={label.anchor}>
-        압박 라인 y={Math.round(y)}
+        압박 라인 {pressingLineLevel(y)}
       </text>
     </g>
   )

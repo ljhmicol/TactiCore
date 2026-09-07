@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { autoPressingLine, computeCompactness, outfieldPlayers } from '@/lib/compactness'
+import { autoPressingLine, computeCompactness, outfieldPlayers, pressingLineLevel } from '@/lib/compactness'
 import type { PlayerPosition } from '@/types/analysis'
 
 const positions: PlayerPosition[] = [
@@ -35,5 +35,17 @@ describe('computeCompactness', () => {
 
   it('선수가 없으면 null을 반환한다', () => {
     expect(computeCompactness([])).toBeNull()
+  })
+})
+
+describe('pressingLineLevel', () => {
+  it('y가 작을수록(상대 골문에 가까울수록) 높은 라인으로 분류한다', () => {
+    expect(pressingLineLevel(0)).toBe('매우 높음')
+    expect(pressingLineLevel(19)).toBe('매우 높음')
+    expect(pressingLineLevel(20)).toBe('높음')
+    expect(pressingLineLevel(50)).toBe('보통')
+    expect(pressingLineLevel(65)).toBe('낮음')
+    expect(pressingLineLevel(80)).toBe('매우 낮음')
+    expect(pressingLineLevel(100)).toBe('매우 낮음')
   })
 })

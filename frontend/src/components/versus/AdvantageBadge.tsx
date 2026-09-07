@@ -1,8 +1,6 @@
+import { VERSUS_TEAM_COLORS } from '@/lib/theme'
 import { CHANNEL_KOREAN, computeMatchupAdvantage, THIRD_KOREAN } from '@/lib/versusAdvantage'
 import type { ZoneOverload } from '@/types/analysis'
-
-const COLOR_A = '#38BDF8'
-const COLOR_B = '#A78BFA'
 
 interface AdvantageBadgeProps {
   zones: ZoneOverload[]
@@ -10,14 +8,26 @@ interface AdvantageBadgeProps {
   labelB: string
 }
 
+const zoneLabel = (
+  z: ZoneOverload,
+  third: Record<ZoneOverload['third'], string>,
+) => `${CHANNEL_KOREAN[z.channel]} · ${third[z.third]}(${z.own}:${z.opp})`
+
 /**
- * 오버로드 15구역을 A/B 우세 구역 수로 요약한다. 확률(%)처럼 보이는 숫자는
+ * 오버로드 15구역을 A/B 우세 구역으로 요약한다. 확률(%)처럼 보이는 숫자는
  * 일부러 안 만든다 — 실제 경기 시뮬레이션이 아니라 지금 배치된 좌표의 구역별
  * 수적 우위일 뿐이다(TO-DO 22, 16번 "범위 밖" 메모 참조).
+ *
+ * "수원삼성을 선택하면 어느 구역에서 우세한지 보여주면서 코멘트로 설명"
+ * (2026-09-07 피드백) — 클릭으로 고르는 대신 두 팀의 우세 구역을 항상 같이
+ * 보여준다(피치 위 색은 MatchupOverloadLayer, 아래 문장은 여기). 가장 격차
+ * 큰 구역 하나만이 아니라 우세한 구역 전부를 나열한다.
  */
 export function AdvantageBadge({ zones, labelA, labelB }: AdvantageBadgeProps) {
-  const { aZoneCount, bZoneCount, neutralZoneCount, totalZones, aTopZone, bTopZone } = computeMatchupAdvantage(zones)
+  const { aZones, bZones, neutralZoneCount, totalZones } = computeMatchupAdvantage(zones)
   const third = THIRD_KOREAN(labelA, labelB)
+  const colorA = VERSUS_TEAM_COLORS.A.fill
+  const colorB = VERSUS_TEAM_COLORS.B.fill
 
   if (totalZones === 0) {
     return (
@@ -27,35 +37,39 @@ export function AdvantageBadge({ zones, labelA, labelB }: AdvantageBadgeProps) {
     )
   }
 
-  const aPct = (aZoneCount / totalZones) * 100
-  const bPct = (bZoneCount / totalZones) * 100
+  const aPct = (aZones.length / totalZones) * 100
+  const bPct = (bZones.length / totalZones) * 100
 
-  const zoneSentence = (label: string, color: string, z: ZoneOverload) => (
-    <p className="text-sm" style={{ color }}>
-      <strong>{label}</strong>: {CHANNEL_KOREAN[z.channel]} · {third[z.third]}에서 {z.own}:{z.opp}로 수적 우위
-    </p>
-  )
+  const teamSummary = (label: string, color: string, teamZones: ZoneOverload[]) =>
+    teamZones.length > 0 ? (
+      <p className="text-sm" style={{ color }}>
+        <strong>{label}</strong> 우세 구역({teamZones.length}): {teamZones.map((z) => zoneLabel(z, third)).join(', ')}
+      </p>
+    ) : (
+      <p className="text-sm text-muted-foreground">
+        <strong>{label}</strong>: 수적으로 앞선 구역이 없습니다
+      </p>
+    )
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between text-sm font-medium">
-        <span style={{ color: COLOR_A }}>
-          {labelA} {aZoneCount}구역 우세
+        <span style={{ color: colorA }}>
+          {labelA} {aZones.length}구역 우세
         </span>
         <span className="text-xs text-muted-foreground">전체 {totalZones}구역 중</span>
-        <span style={{ color: COLOR_B }}>
-          {labelB} {bZoneCount}구역 우세
+        <span style={{ color: colorB }}>
+          {labelB} {bZones.length}구역 우세
         </span>
       </div>
       <div className="flex h-2 w-full overflow-hidden rounded-full bg-secondary">
-        <div style={{ width: `${aPct}%`, background: COLOR_A }} />
+        <div style={{ width: `${aPct}%`, background: colorA }} />
         <div style={{ width: `${neutralZoneCount === totalZones ? 100 : 100 - aPct - bPct}%` }} />
-        <div style={{ width: `${bPct}%`, background: COLOR_B }} />
+        <div style={{ width: `${bPct}%`, background: colorB }} />
       </div>
-      <div className="space-y-0.5">
-        {aTopZone && zoneSentence(labelA, COLOR_A, aTopZone)}
-        {bTopZone && zoneSentence(labelB, COLOR_B, bTopZone)}
-        {!aTopZone && !bTopZone && <p className="text-sm text-muted-foreground">모든 구역이 동률입니다.</p>}
+      <div className="space-y-1">
+        {teamSummary(labelA, colorA, aZones)}
+        {teamSummary(labelB, colorB, bZones)}
       </div>
     </div>
   )

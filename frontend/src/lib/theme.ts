@@ -45,6 +45,20 @@ export const POSITION_LINE_COLORS = {
   FW: { fill: '#EF4444', text: '#F8FAFC' },
 } as const
 
+/**
+ * 전술 대결 뷰(TO-DO 16/22) 전용 팀 색 — 포지션 라인 색(POSITION_LINE_COLORS)을
+ * 두 팀 다 똑같이 쓰면 "같은 팀 선수들 같다"는 문제가 생긴다(2026-09-07 사용자
+ * 피드백). 그래서 대결 뷰에서는 포지션이 아니라 팀 단위로 유니폼처럼 고정
+ * 색을 칠한다 — A=홈(파랑), B=원정(마젠타). 기존 오버로드(amber)·압박
+ * 라인(orange) 레이어 색과 겹치지 않게 골랐다. AdvantageBadge·구역 강조·
+ * StaticPlayerNode가 모두 이 상수 하나를 공유해야 배지 색과 피치 위 색이
+ * 어긋나지 않는다.
+ */
+export const VERSUS_TEAM_COLORS = {
+  A: { fill: '#3B82F6', text: '#F8FAFC', label: '파랑' },
+  B: { fill: '#EC4899', text: '#F8FAFC', label: '마젠타' },
+} as const
+
 export const LAYER_COLORS = {
   channelGrid: { color: '#FFFFFF', opacity: 0.2 },
   halfSpaces: { color: '#FFFFFF', opacity: 0.08 },

@@ -1,6 +1,6 @@
 import { AdvantageBadge } from '@/components/versus/AdvantageBadge'
+import { MatchupOverloadLayer } from '@/components/versus/MatchupOverloadLayer'
 import { ChannelGrid } from '@/components/pitch/ChannelGrid'
-import { OverloadLayer } from '@/components/pitch/OverloadLayer'
 import { Pitch } from '@/components/pitch/Pitch'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { StaticPlayerNode } from '@/components/pitch/StaticPlayerNode'
@@ -73,7 +73,7 @@ export function MatchupView({
               orientation="landscape"
             />
           )}
-          {showOverload && <OverloadLayer phase={syntheticPhase} orientation="landscape" />}
+          {showOverload && <MatchupOverloadLayer zones={zones} orientation="landscape" />}
           {analysisA.players.map((player, index) => {
             const pos = dataA.positions.find((p) => p.playerId === player.id)
             if (!pos) return null

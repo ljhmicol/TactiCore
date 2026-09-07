@@ -20,7 +20,12 @@
     { "id": "p10", "name": "포든", "number": 47, "role": "LW" },
     { "id": "p8", "name": "더 브라위너", "number": 17, "role": "AM" },
     { "id": "p9", "name": "도쿠", "number": 11, "role": "RW" },
-    { "id": "p11", "name": "홀란", "number": 9, "role": "ST" }
+    { "id": "p11", "name": "홀란", "number": 9, "role": "ST" },
+    { "id": "b1", "name": "슈테판 오르테가", "number": 18, "role": "GK(백업)" },
+    { "id": "b2", "name": "나탄 아케", "number": 6, "role": "CB" },
+    { "id": "b3", "name": "마테오 코바치치", "number": 8, "role": "DM" },
+    { "id": "b4", "name": "잭 그릴리시", "number": 10, "role": "LW" },
+    { "id": "b5", "name": "훌리안 알바레스", "number": 19, "role": "ST" }
   ],
   "phases": {
     "base": {

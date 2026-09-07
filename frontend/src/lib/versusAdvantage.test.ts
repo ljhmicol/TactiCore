@@ -8,29 +8,31 @@ function zone(diff: number, channel: ZoneOverload['channel'] = 'center', third: 
 }
 
 describe('computeMatchupAdvantage', () => {
-  it('counts positive diff zones as A, negative as B, zero as neutral', () => {
+  it('splits positive diff zones into aZones, negative into bZones, zero as neutral', () => {
     const result = computeMatchupAdvantage([zone(2), zone(1), zone(0), zone(-1), zone(-3)])
-    expect(result.aZoneCount).toBe(2)
-    expect(result.bZoneCount).toBe(2)
+    expect(result.aZones).toHaveLength(2)
+    expect(result.bZones).toHaveLength(2)
     expect(result.neutralZoneCount).toBe(1)
     expect(result.totalZones).toBe(5)
   })
 
-  it('picks the most lopsided zone for each side', () => {
+  it('sorts each side by |diff| descending and picks the top as aTopZone/bTopZone', () => {
     const result = computeMatchupAdvantage([
       zone(1, 'leftWing'),
       zone(3, 'center'),
       zone(-1, 'rightWing'),
       zone(-2, 'rightHalf'),
     ])
-    expect(result.aTopZone?.channel).toBe('center')
+    expect(result.aZones.map((z) => z.channel)).toEqual(['center', 'leftWing'])
+    expect(result.bZones.map((z) => z.channel)).toEqual(['rightHalf', 'rightWing'])
     expect(result.aTopZone?.diff).toBe(3)
-    expect(result.bTopZone?.channel).toBe('rightHalf')
     expect(result.bTopZone?.diff).toBe(-2)
   })
 
-  it('returns null top zones when nobody is ahead anywhere', () => {
+  it('returns null top zones and empty lists when nobody is ahead anywhere', () => {
     const result = computeMatchupAdvantage([zone(0), zone(0)])
+    expect(result.aZones).toEqual([])
+    expect(result.bZones).toEqual([])
     expect(result.aTopZone).toBeNull()
     expect(result.bTopZone).toBeNull()
   })
@@ -38,8 +40,8 @@ describe('computeMatchupAdvantage', () => {
   it('handles an empty zone list', () => {
     const result = computeMatchupAdvantage([])
     expect(result).toEqual({
-      aZoneCount: 0,
-      bZoneCount: 0,
+      aZones: [],
+      bZones: [],
       neutralZoneCount: 0,
       totalZones: 0,
       aTopZone: null,

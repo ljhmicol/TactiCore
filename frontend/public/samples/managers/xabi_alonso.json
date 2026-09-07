@@ -20,7 +20,12 @@
     { "id": "p6", "name": "프림퐁", "number": 30, "role": "RWB" },
     { "id": "p9", "name": "호프만", "number": 7, "role": "AM" },
     { "id": "p10", "name": "비르츠", "number": 10, "role": "AM" },
-    { "id": "p11", "name": "보니파스", "number": 22, "role": "ST" }
+    { "id": "p11", "name": "보니파스", "number": 22, "role": "ST" },
+    { "id": "b1", "name": "마테이 코바르시", "number": 17, "role": "GK(백업)" },
+    { "id": "b2", "name": "오딜론 코수누", "number": 6, "role": "CB" },
+    { "id": "b3", "name": "엑세키엘 팔라시오스", "number": 25, "role": "CM" },
+    { "id": "b4", "name": "아민 아들리", "number": 21, "role": "LW" },
+    { "id": "b5", "name": "아담 흘로제크", "number": 23, "role": "FW" }
   ],
   "phases": {
     "base": {

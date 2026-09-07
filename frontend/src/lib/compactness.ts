@@ -17,6 +17,21 @@ export function autoPressingLine(positions: PlayerPosition[]): number {
   return sorted[1]?.y ?? sorted[0]?.y ?? 0
 }
 
+export type PressingLineLevel = '매우 높음' | '높음' | '보통' | '낮음' | '매우 낮음'
+
+/**
+ * "압박 라인 y=82" 같은 숫자 표기는 y=0이 상대 골문이라는 좌표 규약을 모르면
+ * 못 읽는다(2026-09-07 사용자 피드백). y가 작을수록(상대 골문에 가까울수록)
+ * "높은 라인"이라는 축구 용어에 맞춰 5단계로 바꾼다. 경계값은 각 20 단위.
+ */
+export function pressingLineLevel(y: number): PressingLineLevel {
+  if (y < 20) return '매우 높음'
+  if (y < 40) return '높음'
+  if (y < 60) return '보통'
+  if (y < 80) return '낮음'
+  return '매우 낮음'
+}
+
 export interface CompactnessResult {
   box: { x: number; y: number; width: number; height: number }
   verticalM: number

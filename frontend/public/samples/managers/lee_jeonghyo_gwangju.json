@@ -20,7 +20,12 @@
     { "id": "p8", "name": "정호연", "number": 14, "role": "CM" },
     { "id": "p6", "name": "이희균", "number": 16, "role": "RM" },
     { "id": "p10", "name": "아사니", "number": 11, "role": "ST" },
-    { "id": "p11", "name": "허율", "number": 9, "role": "ST" }
+    { "id": "p11", "name": "허율", "number": 9, "role": "ST" },
+    { "id": "b1", "name": "이준", "number": 21, "role": "GK(백업)" },
+    { "id": "b2", "name": "김경재", "number": 15, "role": "CB" },
+    { "id": "b3", "name": "이으뜸", "number": 8, "role": "LB" },
+    { "id": "b4", "name": "여봉훈", "number": 30, "role": "CM" },
+    { "id": "b5", "name": "하승운", "number": 19, "role": "FW" }
   ],
   "phases": {
     "base": {

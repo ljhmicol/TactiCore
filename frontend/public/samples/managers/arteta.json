@@ -20,7 +20,12 @@
     { "id": "p8", "name": "외데고르", "number": 8, "role": "CM" },
     { "id": "p10", "name": "마르티넬리", "number": 11, "role": "LW" },
     { "id": "p11", "name": "예수스", "number": 9, "role": "ST" },
-    { "id": "p9", "name": "사카", "number": 7, "role": "RW" }
+    { "id": "p9", "name": "사카", "number": 7, "role": "RW" },
+    { "id": "b1", "name": "아론 램스데일", "number": 1, "role": "GK(백업)" },
+    { "id": "b2", "name": "도미야스 다케히로", "number": 18, "role": "RB" },
+    { "id": "b3", "name": "야쿠프 키비오르", "number": 15, "role": "CB" },
+    { "id": "b4", "name": "토마스 파티", "number": 5, "role": "DM" },
+    { "id": "b5", "name": "레안드로 트로사르", "number": 19, "role": "LW" }
   ],
   "phases": {
     "base": {
