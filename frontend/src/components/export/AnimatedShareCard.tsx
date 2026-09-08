@@ -17,6 +17,12 @@ const PHASE_LABELS: Record<PhaseType, string> = { base: '기본', attack: '공�
 // GIF는 프레임을 수십 장 인코딩하므로 PNG(1080)보다 작게 잡아 용량·속도를 아낀다.
 // GifExportRunner의 toCanvas 캡처 크기와 반드시 같아야 해서 export한다.
 export const GIF_CARD_SIZE = 720
+// ShareCard(PNG, 1080px 기준)의 치수를 그대로 이 비율로 축소한다 — pitch의
+// minHeight(380)를 축소 없이 그대로 썼더니 720px 카드에서 피치가 카드의
+// 절반 넘게 차지해 코멘트 박스가 짓눌려 텍스트가 잘렸다(2026-09-08 사용자
+// 리포트: "코멘트도 잘리고"). ShareCard와 같은 비율을 유지해야 코멘트가
+// PNG만큼 여유 있게 보인다.
+const SCALE = GIF_CARD_SIZE / 1080
 
 /** ShareCard의 useFitFontSize와 같은 로직 — 컴포넌트 파일 간 공유하지 않고
  * 각자 두는 게 이 프로젝트 관례다(다른 국면 라벨 상수들도 파일마다 따로 둠). */
@@ -67,8 +73,14 @@ export const AnimatedShareCard = forwardRef<HTMLDivElement, AnimatedShareCardPro
   const bench = analysis.players.filter((p) => !phaseData.positions.some((pos) => pos.playerId === p.id))
   const rawBodyText = frame.phase === 'base' ? analysis.summary : phaseData.comment
   const bodyText = rawBodyText.length > 500 ? `${rawBodyText.slice(0, 499).trimEnd()}…` : rawBodyText
-  const bodyBoxHeight = bench.length > 0 ? 110 : 140
-  const { ref: bodyRef, fontSize: bodyFontSize } = useFitFontSize(bodyText, bodyBoxHeight, 22, 12)
+  // ShareCard(1:1)의 170/210을 그대로 SCALE만큼 축소 — 임의로 다시 정하지 않는다.
+  const bodyBoxHeight = Math.round((bench.length > 0 ? 170 : 210) * SCALE)
+  const { ref: bodyRef, fontSize: bodyFontSize } = useFitFontSize(
+    bodyText,
+    bodyBoxHeight,
+    Math.round(32 * SCALE),
+    Math.round(16 * SCALE),
+  )
 
   return (
     <div style={{ position: 'absolute', left: -9999, top: 0 }}>
@@ -78,24 +90,31 @@ export const AnimatedShareCard = forwardRef<HTMLDivElement, AnimatedShareCardPro
           width: GIF_CARD_SIZE,
           height: GIF_CARD_SIZE,
           background: SHARE_CARD_COLORS.background,
-          padding: 40,
+          padding: Math.round(64 * SCALE),
           display: 'flex',
           flexDirection: 'column',
-          gap: 16,
+          gap: Math.round(24 * SCALE),
           fontFamily: 'system-ui, sans-serif',
           boxSizing: 'border-box',
         }}
       >
         <div>
-          <div style={{ fontSize: 30, fontWeight: 700, color: SHARE_CARD_COLORS.title }}>
+          <div style={{ fontSize: Math.round(48 * SCALE), fontWeight: 700, color: SHARE_CARD_COLORS.title }}>
             {analysis.match.matchName || `${analysis.match.homeTeam} vs ${analysis.match.awayTeam}`}
           </div>
-          <div style={{ fontSize: 20, fontWeight: 700, color: SHARE_CARD_COLORS.phaseLabel, marginTop: 6 }}>
+          <div
+            style={{
+              fontSize: Math.round(32 * SCALE),
+              fontWeight: 700,
+              color: SHARE_CARD_COLORS.phaseLabel,
+              marginTop: Math.round(12 * SCALE),
+            }}
+          >
             {PHASE_LABELS[frame.phase]} 국면
           </div>
         </div>
 
-        <div style={{ flex: 1, minHeight: 380, display: 'flex', justifyContent: 'center' }}>
+        <div style={{ flex: 1, minHeight: Math.round(380 * SCALE), display: 'flex', justifyContent: 'center' }}>
           <div style={{ height: '100%' }}>
             <Pitch>
               {layers.channelGrid && <ChannelGrid halfSpaces={layers.halfSpaces} />}
@@ -104,7 +123,7 @@ export const AnimatedShareCard = forwardRef<HTMLDivElement, AnimatedShareCardPro
                 <PressingLine positions={phaseData.positions} pressingLineY={phaseData.pressingLineY} />
               )}
               {layers.overload && hasOpponent && <OverloadLayer phase={phaseData} />}
-              <AnnotationLayer annotations={phaseData.annotations} />
+              <AnnotationLayer annotations={phaseData.annotations} animated={false} />
               {phaseData.opponentPositions?.map((pos, i) => <OpponentNode key={i} slot={i} position={pos} />)}
               {analysis.players.map((player, index) => {
                 const pos = frame.positions.find((p) => p.playerId === player.id)
@@ -139,7 +158,7 @@ export const AnimatedShareCard = forwardRef<HTMLDivElement, AnimatedShareCardPro
         {bench.length > 0 && (
           <div
             style={{
-              fontSize: 15,
+              fontSize: Math.round(22 * SCALE),
               color: SHARE_CARD_COLORS.subtitle,
               overflow: 'hidden',
               textOverflow: 'ellipsis',

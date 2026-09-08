@@ -22,6 +22,16 @@ interface AnnotationLayerProps {
     onSelect: (id: string) => void
     onRemove: (id: string) => void
   }
+  /**
+   * 기본 true — false면 패스 공(PassChainBall)을 그리지 않고 화살표만
+   * 정적으로 그린다. GIF 내보내기(TO-DO 6) 전용: 공은 repeat: Infinity로
+   * 실제 벽시계 시간을 따라 도는데, GIF는 프레임을 실시간 재생이 아니라
+   * 가상 시간으로 하나씩 캡처하다 보니(GifExportRunner) 캡처 사이사이
+   * 공이 계속 따로 움직여서 "중간에 멈추거나 다음 국면으로 그대로
+   * 넘어가 버리는" 것처럼 보였다(2026-09-08 사용자 리포트) — 애니메이션
+   * 자체를 아예 렌더링하지 않는 쪽이 가상 시간 스테핑과 맞다.
+   */
+  animated?: boolean
 }
 
 const BADGE_RADIUS = circularRadius(1.7)
@@ -48,10 +58,10 @@ const BALL_SEGMENT_DURATION = 0.45
  * 시작점 근처에서 시작하는 run 화살표를 찾아 스스로 그 방향으로 왕복한다.
  * 화살표는 여기서 모양·클릭 판정만 그린다.
  */
-export function AnnotationLayer({ annotations, interactive }: AnnotationLayerProps) {
+export function AnnotationLayer({ annotations, interactive, animated = true }: AnnotationLayerProps) {
   const passChains = useMemo(
-    () => buildPassChains(annotations.filter((a) => a.type === 'pass')),
-    [annotations],
+    () => (animated ? buildPassChains(annotations.filter((a) => a.type === 'pass')) : []),
+    [annotations, animated],
   )
 
   return (
