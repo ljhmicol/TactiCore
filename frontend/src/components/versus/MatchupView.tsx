@@ -4,7 +4,7 @@ import { ChannelGrid } from '@/components/pitch/ChannelGrid'
 import { Pitch } from '@/components/pitch/Pitch'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { StaticPlayerNode } from '@/components/pitch/StaticPlayerNode'
-import { mirrorPoint, resolveDefendingPressingLineY } from '@/lib/coords'
+import { mirrorPoint, resolveDefendingPressingLineLevel, resolveDefendingPressingLineY } from '@/lib/coords'
 import { computeOverload } from '@/lib/overload'
 import type { Analysis, PhaseData, PhaseType, PlayerPosition } from '@/types/analysis'
 
@@ -62,6 +62,16 @@ export function MatchupView({
     dataA.positions,
     dataB.positions,
   )
+  // "매우 높음/낮음" 라벨은 그리기 위치(위 값, B면 미러링됨)와 별개로 항상
+  // 그 팀 고유 좌표계 값으로 판정한다 — 미러링된 값을 그대로 라벨에 쓰면
+  // 높낮이가 뒤집히는 실제 버그 이력은 resolveDefendingPressingLineLevel 참조.
+  const defendingPressingLineLevel = resolveDefendingPressingLineLevel(
+    phaseA === 'defense',
+    dataA.pressingLineY,
+    dataB.pressingLineY,
+    dataA.positions,
+    dataB.positions,
+  )
 
   const labelA = analysisA.match.homeTeam
   const labelB = analysisB.match.homeTeam
@@ -77,6 +87,7 @@ export function MatchupView({
             <PressingLine
               positions={defendingPositions}
               pressingLineY={defendingPressingLineY}
+              labelY={defendingPressingLineLevel}
               orientation="landscape"
             />
           )}

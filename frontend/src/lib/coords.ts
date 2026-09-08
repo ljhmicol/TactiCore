@@ -89,3 +89,26 @@ export function resolveDefendingPressingLineY(
   const y = dataBPressingLineY ?? autoPressingLine(dataBPositions)
   return 100 - y
 }
+
+/**
+ * 압박 라인의 "매우 높음/낮음" 라벨을 판정할 값 — resolveDefendingPressingLineY와
+ * 짝을 이루지만 **절대 미러링하지 않는다**(2026-09-08 실제 버그: "전술
+ * 대결에서 교대할 때 압박라인이 좀 이상하다"). 미러링은 화면 어디에 선을
+ * 그릴지만 바꾸는 것이지, B팀 자신의 관점에서 그 라인이 높은지 낮은지는
+ * 바꾸지 않는다 — B팀의 평범한(깊은) 백라인이 미러링을 거치면 y가 작아져서
+ * `pressingLineLevel`이 "매우 높음"으로 잘못 읽었다. 두 팀 다 항상 자기
+ * 고유 좌표계 값(수동 지정 또는 그 팀 포지션으로 자동 산출)을 그대로
+ * 반환한다 — PressingLine의 `labelY` prop으로 넘겨 그리기 위치(y, 미러링
+ * 될 수 있음)와 분리해서 쓴다.
+ */
+export function resolveDefendingPressingLineLevel(
+  aIsDefending: boolean,
+  dataAPressingLineY: number | null | undefined,
+  dataBPressingLineY: number | null | undefined,
+  dataAPositions: PlayerPosition[],
+  dataBPositions: PlayerPosition[],
+): number {
+  return aIsDefending
+    ? (dataAPressingLineY ?? autoPressingLine(dataAPositions))
+    : (dataBPressingLineY ?? autoPressingLine(dataBPositions))
+}

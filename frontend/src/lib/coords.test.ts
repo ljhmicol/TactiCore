@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { clampCoord, mirrorPoint, resolveDefendingPressingLineY } from '@/lib/coords'
+import { clampCoord, mirrorPoint, resolveDefendingPressingLineLevel, resolveDefendingPressingLineY } from '@/lib/coords'
 import type { PlayerPosition } from '@/types/analysis'
 
 // 각 팀 고유(미러링 전) 좌표계 — GK가 y 최댓값이라는 autoPressingLine의 전제가
@@ -89,5 +89,30 @@ describe('resolveDefendingPressingLineY', () => {
     const result = resolveDefendingPressingLineY(false, 82, null, positionsA, positionsB)
     expect(result).toBe(18)
     expect(result).not.toBe(32) // 좌표를 먼저 미러링했다면 나왔을 잘못된 값
+  })
+})
+
+describe('resolveDefendingPressingLineLevel', () => {
+  it('A가 수비면 resolveDefendingPressingLineY와 같다(미러링이 없으므로)', () => {
+    expect(resolveDefendingPressingLineLevel(true, 82, 40, positionsA, positionsB)).toBe(82)
+    expect(resolveDefendingPressingLineLevel(true, null, 40, positionsA, positionsB)).toBe(70)
+  })
+
+  // 회귀 테스트 — 2026-09-08 실제 버그(2차): "전술 대결에서 교대할 때 압박라인이
+  // 좀 이상하다". resolveDefendingPressingLineY(false, ...)는 그리기 위치를 위해
+  // B의 값을 미러링해 100-82=18을 반환하는데, 이 미러링된 값을 그대로
+  // pressingLineLevel에 넣으면 B팀의 평범한(깊은) 백라인이 "매우 높음"으로
+  // 잘못 표시된다. labelY(이 함수의 반환값)는 미러링하지 않은 B의 원본 값(82,
+  // 자기 진영 깊숙한 라인 → "낮음")을 그대로 반환해야 한다.
+  it('B가 수비면 미러링하지 않은 원본 값을 반환한다(resolveDefendingPressingLineY와 다름)', () => {
+    const drawY = resolveDefendingPressingLineY(false, 82, 40, positionsA, positionsB)
+    const labelY = resolveDefendingPressingLineLevel(false, 82, 40, positionsA, positionsB)
+    expect(drawY).toBe(60) // 그리기용 — 미러링됨(100-40)
+    expect(labelY).toBe(40) // 라벨용 — 미러링 안 됨(B의 원본 값 그대로)
+  })
+
+  it('B가 수비면서 자동 산출인 경우도 미러링하지 않는다', () => {
+    const labelY = resolveDefendingPressingLineLevel(false, 82, null, positionsA, positionsB)
+    expect(labelY).toBe(82) // autoPressingLine(positionsB) 그대로, 100-82 아님
   })
 })
