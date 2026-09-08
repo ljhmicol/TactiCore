@@ -1,5 +1,5 @@
 import { motion, type PanInfo } from 'framer-motion'
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ANNOTATION_LINK_EPS, annotationSamplePoints, travelTimes } from '@/lib/annotations'
 import { clampCoord, clientToPitch } from '@/lib/coords'
@@ -18,6 +18,8 @@ interface PlayerNodeProps {
 }
 
 const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
+const RUN_LOOP_DURATION = 0.9 // 오버랩 구간 전진에 걸리는 시간(초)
+const RUN_LOOP_DELAY = 0.5 // 전진 끝점에서 리셋 전까지 머무는 시간(초)
 
 /**
  * key는 항상 player.id여야 한다 (배열 인덱스 금지) — 2단계 §8, 4단계 §5.1.
@@ -40,18 +42,34 @@ const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
  * 보여준다(2026-09-07 — "필드에서도 역할이 한눈에 보이게"). 역할이 포지션도
  * 함축하므로 둘 다 표시하지 않는다.
  *
- * 공격·수비 국면에 이 선수의 도착 지점(position)과 끝점이 가까운 run
- * 화살표가 있으면(2026-09-07, 3차 — "기본 국면에서는 가만히 있고, 공격·
- * 수비 국면에서 화살표로 선수들이 움직이는 게 표현되면, 왕복 말고") 원·
- * 라벨·번호·이름이 전부 그 화살표 경로를 따라 국면 전환 애니메이션(0.6초,
- * PHASE_TRANSITION_MS와 동일)을 딱 한 번만 재생하고 끝점에 멈춘다 — 반복
- * 왕복하지 않는다. 기본 국면은 이 탐색 자체를 건너뛰어 항상 정지 상태다.
- * run 화살표는 선수에 부착되지 않는 자유 좌표라(4단계 §5.1) ID로 연결할
- * 수 없어, 화살표의 to가 이 선수의 도착 position과 가까우면
- * (ANNOTATION_LINK_EPS) "이 선수가 여기로 온 움직임"으로 본다. PNG
- * 캡처(ShareCard)는 isMorphing이 꺼질 때까지 기다리는데(lib/exportImage.ts)
- * 그 시점이 PHASE_TRANSITION_MS와 같아서, 이 애니메이션 길이도 똑같이
- * 맞춰야 캡처 시점에 선수가 경로 중간에 멈춰 있는 사고가 안 난다.
+ * === run 화살표의 의미(2026-09-08, 5차 재정의) ===
+ * 화살표는 "기본 포메이션에서 이 국면 포메이션으로 어떻게 이동했는가"가
+ * 아니라, "이 국면의 포메이션 위치(position)에 도착한 뒤, 거기서 추가로
+ * 어느 방향으로 움직이는가"를 나타낸다 — 예: 풀백이 윙백 자리(포메이션
+ * 위치)까지 온 다음 거기서 더 높은 곳으로 오버래핑하거나, 미드필더가
+ * 수비형 미드필더 자리까지 내려온 다음 센터백 사이로 더 내려가 빌드업에
+ * 가담하는 것. 전진/후퇴 등 방향은 제한하지 않는다 — 화살표의 from이
+ * position과 가까우면(ANNOTATION_LINK_EPS) 매칭한다(화살표는 선수에
+ * 부착되지 않는 자유 좌표라 ID로 연결할 수 없다, 4단계 §5.1).
+ *
+ * 이 추가 움직임은 실제 포메이션 데이터(position)를 바꾸는 게 아니라
+ * "이 자리에서 이런 패턴의 움직임을 보인다"는 예시 동작이므로, 국면이
+ * 유지되는 동안 반복한다. 단, "왕복"(부드러운 역재생)은 명시적으로
+ * 거부됐다 — 전진했다가 시작점으로 부드럽게 되감는 대신, 전진 → 끝점에서
+ * 잠깐 머묾 → 순간적으로(역재생 없이) 시작점으로 리셋 → 다시 전진을
+ * 반복한다(Framer Motion의 repeatType 기본값인 'loop'가 정확히 이 동작이다
+ * — 'reverse'와 달리 매 반복을 keyframes[0]부터 다시 재생한다).
+ *
+ * 시퀀싱: 국면이 바뀌면 먼저 이 선수는 항상 position까지 평범하게 모프한다
+ * (0.6초, PHASE_TRANSITION_MS와 동일 — 화살표가 있든 없든 모든 선수가
+ * 거치는 공통 경로). 화살표가 매칭되면 그 모프가 끝나는 시점(같은
+ * PHASE_TRANSITION_MS 뒤)에만 반복 루프를 "장전"해 cx/cy의 animate 대상을
+ * 단일 값에서 좌표 배열로 바꾼다 — 정확히 position에 도착해 있는 상태에서
+ * 배열 첫 값도 position이므로 전환 시 스냅(순간 이동)이 생기지 않는다.
+ * 이렇게 두 단계로 나눈 이유: Framer Motion이 배열 target으로 바뀔 때
+ * 배열의 첫 값을 "그 시점에 즉시 도달해야 하는 값"으로 취급하는 것으로
+ * 보여(현재 렌더링 값과 다르면 순간이동할 위험), 배열로 전환하는 시점의
+ * 실제 렌더링 값이 이미 position과 같도록 미리 모프를 끝내둔다.
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
@@ -76,21 +94,48 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const topLabel = role?.label ?? info?.label
   const topLabelFontSize = role ? 1.4 : 1.7
 
-  const runMotionPoints = useMemo(() => {
-    // 화살표의 끝(to)이 이 선수가 지금 서 있는 자리와 가까우면 "그 화살표를
-    // 따라 여기 도착했다"는 뜻으로 본다 — from이 아니라 to로 찾는다.
-    const arrow = runAnnotations?.find((a) => Math.hypot(a.to.x - position.x, a.to.y - position.y) <= ANNOTATION_LINK_EPS)
-    return arrow ? annotationSamplePoints(arrow) : null
+  // 이 국면의 포메이션 위치(position)에서 시작하는 run 화살표 — from으로
+  // 찾는다(도착이 아니라 "여기서부터 추가로 움직인다"는 뜻이므로).
+  const runMatchId = useMemo(() => {
+    const arrow = runAnnotations?.find((a) => Math.hypot(a.from.x - position.x, a.from.y - position.y) <= ANNOTATION_LINK_EPS)
+    return arrow?.id ?? null
   }, [runAnnotations, position])
 
-  // 왕복하지 않는다 — repeat 없이 딱 한 번, 국면 전환과 같은 길이로 재생하고
-  // 끝점에 멈춘다("왕복으로 말고" 피드백).
-  const runTransition = runMotionPoints
-    ? { duration: PHASE_TRANSITION_MS / 1000, times: travelTimes(runMotionPoints), ease: 'easeInOut' as const }
+  const runPoints = useMemo(() => {
+    const arrow = runAnnotations?.find((a) => a.id === runMatchId)
+    if (!arrow) return null
+    // 첫 점을 정확히 position으로 고정 — 손으로 그린 화살표의 from이 position과
+    // 완벽히 일치하지 않을 수 있는데, 그대로 쓰면 루프가 장전되는 순간
+    // 몇 유닛 순간이동하는 것처럼 보인다.
+    const [, ...rest] = annotationSamplePoints(arrow)
+    return [position, ...rest]
+  }, [runAnnotations, runMatchId, position])
+
+  // 화살표가 매칭되면 국면 전환 모프(PHASE_TRANSITION_MS)가 끝난 뒤에만
+  // 반복 루프를 장전한다 — 위 문서 주석의 "시퀀싱" 참고.
+  const [runArmed, setRunArmed] = useState(false)
+  useEffect(() => {
+    setRunArmed(false)
+    if (!runMatchId || dragging) return
+    const timer = setTimeout(() => setRunArmed(true), PHASE_TRANSITION_MS)
+    return () => clearTimeout(timer)
+  }, [runMatchId, dragging])
+
+  const active = runArmed && runPoints && !dragging
+  // 왕복(부드러운 역재생) 대신 매 반복을 처음부터 다시 재생 — repeatType
+  // 기본값 'loop'가 이 동작이다("전진하고 다시 깜빡해서 돌아왔다가 다시 전진").
+  const runTransition = active
+    ? {
+        duration: RUN_LOOP_DURATION,
+        times: travelTimes(runPoints!),
+        ease: 'easeInOut' as const,
+        repeat: Infinity,
+        repeatDelay: RUN_LOOP_DELAY,
+      }
     : null
   const activeTransition = dragging ? { duration: 0 } : (runTransition ?? transition)
-  const cx = runMotionPoints ? runMotionPoints.map((p) => p.x) : position.x
-  const cy = runMotionPoints ? runMotionPoints.map((p) => p.y) : position.y
+  const cx = active ? runPoints!.map((p) => p.x) : position.x
+  const cy = active ? runPoints!.map((p) => p.y) : position.y
 
   const handlePan = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (!svgRef.current) return
@@ -122,7 +167,7 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
           initial={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
           animate={{
             x: cx,
-            y: runMotionPoints ? runMotionPoints.map((p) => p.y - OWN_RADIUS.ry - 1.4) : position.y - OWN_RADIUS.ry - 1.4,
+            y: active ? runPoints!.map((p) => p.y - OWN_RADIUS.ry - 1.4) : position.y - OWN_RADIUS.ry - 1.4,
           }}
           transition={activeTransition}
           fill={PLAYER_COLORS.own.fill}
@@ -150,7 +195,7 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
         initial={{ x: position.x, y: position.y + OWN_RADIUS.ry + 3 }}
         animate={{
           x: cx,
-          y: runMotionPoints ? runMotionPoints.map((p) => p.y + OWN_RADIUS.ry + 3) : position.y + OWN_RADIUS.ry + 3,
+          y: active ? runPoints!.map((p) => p.y + OWN_RADIUS.ry + 3) : position.y + OWN_RADIUS.ry + 3,
         }}
         transition={activeTransition}
         fill="#F8FAFC"
