@@ -62,6 +62,7 @@ interface AnalysisStore {
   drawTool: DrawTool // 전술 그리기 도구 (화면 설정 — 저장 대상 아님)
   curvedDraw: boolean // 다음에 그릴 화살표를 곡선으로 — 화면 설정, 저장 대상 아님(2026-09-07)
   editingPlayerId: string | null // 피치의 선수 클릭으로 연 편집 다이얼로그
+  isPressingLineDragging: boolean // 압박 라인을 드래그하는 동안 true — PlayerNode가 모프 애니메이션 없이 즉시 따라오게 함(2026-09-08)
 
   loadAnalysis: (a: Analysis) => void
   closeAnalysis: () => void // 로고 클릭 등 "처음 화면으로" — 로드된 분석을 비운다(2026-09-07)
@@ -88,6 +89,7 @@ interface AnalysisStore {
   toggleLayer: (key: keyof LayerToggles) => void
   applyFormation: (name: string) => void // FR-06
   applySavedMeta: (meta: { id: number; createdAt: string; updatedAt: string }) => void // 저장 성공 후 id/시각만 반영
+  setPressingLineDragging: (v: boolean) => void
 }
 
 const defaultLayers: LayerToggles = {
@@ -111,6 +113,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   drawTool: 'select',
   curvedDraw: false,
   editingPlayerId: null,
+  isPressingLineDragging: false,
 
   loadAnalysis: (a) =>
     set({ analysis: a, currentPhase: 'base', previousPhase: null, isDirty: false, editingPlayerId: null }),
@@ -124,6 +127,7 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       drawTool: 'select',
       curvedDraw: false,
       editingPlayerId: null,
+      isPressingLineDragging: false,
     }),
 
   setPhase: (p) => set({ currentPhase: p }),
@@ -183,6 +187,8 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   toggleCurvedDraw: () => set((s) => ({ curvedDraw: !s.curvedDraw })),
 
   setEditingPlayer: (id) => set({ editingPlayerId: id }),
+
+  setPressingLineDragging: (v) => set({ isPressingLineDragging: v }),
 
   addAnnotation: (type, from, to, curved) => {
     const { analysis, currentPhase } = get()

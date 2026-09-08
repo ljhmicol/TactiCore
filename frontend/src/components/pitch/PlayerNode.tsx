@@ -70,6 +70,12 @@ const RUN_LOOP_DELAY = 0.5 // 전진 끝점에서 리셋 전까지 머무는 시
  * 배열의 첫 값을 "그 시점에 즉시 도달해야 하는 값"으로 취급하는 것으로
  * 보여(현재 렌더링 값과 다르면 순간이동할 위험), 배열로 전환하는 시점의
  * 실제 렌더링 값이 이미 position과 같도록 미리 모프를 끝내둔다.
+ *
+ * 압박 라인을 드래그하는 동안(2026-09-08)도 이 선수 자신을 드래그할 때와
+ * 똑같이 즉시(0초) 반영한다 — `isPressingLineDragging`(스토어)이 켜져
+ * 있으면 국면 전환 모프(0.6초)를 건너뛴다. 안 그러면 압박 라인을 당기는
+ * 손가락/커서보다 선수가 한 박자 늦게 쫓아오는 것처럼 보인다(실측: 클릭
+ * 400ms 뒤에도 아직 모프 중간값이었다).
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
@@ -77,13 +83,15 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const setEditingPlayer = useAnalysisStore((s) => s.setEditingPlayer)
   const index = useAnalysisStore((s) => s.analysis?.players.findIndex((p) => p.id === player.id) ?? -1)
   const formation = useAnalysisStore((s) => s.analysis?.formation)
+  const isPressingLineDragging = useAnalysisStore((s) => s.isPressingLineDragging)
   // 기본 국면은 포메이션만 보여주는 정지 상태여야 하므로 애초에 조회하지
   // 않는다 — "기본 국면에서는 화살표방향으로 움직이지 않고... 가만히".
   const runAnnotations = useAnalysisStore((s) =>
     s.currentPhase === 'base' ? undefined : s.analysis?.phases[s.currentPhase].annotations.filter((a) => a.type === 'run'),
   )
   const [dragging, setDragging] = useState(false)
-  const transition = dragging ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
+  const instant = dragging || isPressingLineDragging
+  const transition = instant ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
   const info = formation ? positionInfoAt(formation, index) : null
   const lineColor = info ? POSITION_LINE_COLORS[info.line] : null
   // 전술 역할이 지정돼 있으면 포지션 코드(LB, CB…) 대신 역할 이름을 원 위에
@@ -116,12 +124,12 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const [runArmed, setRunArmed] = useState(false)
   useEffect(() => {
     setRunArmed(false)
-    if (!runMatchId || dragging) return
+    if (!runMatchId || instant) return
     const timer = setTimeout(() => setRunArmed(true), PHASE_TRANSITION_MS)
     return () => clearTimeout(timer)
-  }, [runMatchId, dragging])
+  }, [runMatchId, instant])
 
-  const active = runArmed && runPoints && !dragging
+  const active = runArmed && runPoints && !instant
   // 왕복(부드러운 역재생) 대신 매 반복을 처음부터 다시 재생 — repeatType
   // 기본값 'loop'가 이 동작이다("전진하고 다시 깜빡해서 돌아왔다가 다시 전진").
   const runTransition = active
@@ -133,7 +141,7 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
         repeatDelay: RUN_LOOP_DELAY,
       }
     : null
-  const activeTransition = dragging ? { duration: 0 } : (runTransition ?? transition)
+  const activeTransition = instant ? { duration: 0 } : (runTransition ?? transition)
   const cx = active ? runPoints!.map((p) => p.x) : position.x
   const cy = active ? runPoints!.map((p) => p.y) : position.y
 

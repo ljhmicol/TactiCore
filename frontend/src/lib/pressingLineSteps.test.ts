@@ -97,27 +97,59 @@ describe('shiftPositionsToPressingLevel', () => {
     }
   })
 
-  // 회귀 테스트 — 델타를 개별 clamp하면 극단적인 단계 선택 시 어떤 선수만 피치
-  // 경계에 눌려 간격 비율이 깨진다. 델타 자체를 줄여야 전원이 함께 멈춘다.
-  it('극단적인 이동으로 경계에 닿아도 델타를 줄여서 전원이 함께 멈추고 개별 왜곡이 없다', () => {
-    // FW가 이미 y=22까지 올라와 있는 4-3-3에서 "매우 낮음"(목표 y=95)으로
-    // 보내면 이동량이 커서 자연스럽게 잘 들어가지만, 반대 극단(이미 매우 얕은
-    // 포메이션에서 "매우 높음"으로 더 밀어올리는 경우)을 만들어 검증한다.
-    const shallow: PlayerPosition[] = basePositions.map((p) => (p.playerId === gkId ? p : { ...p, y: p.y - 15 }))
-    const result = shiftPositionsToPressingLevel(shallow, gkId, '매우 높음')!
-    const outfield = result.positions.filter((p) => p.playerId !== gkId)
-    // 아무도 0 밑으로 안 내려갔어야 한다
-    for (const p of outfield) expect(p.y).toBeGreaterThanOrEqual(0)
-    // 그리고 간격은 여전히 원본과 동일해야 한다(개별 왜곡 없음)
-    const dfId = analysis.players[1].id
-    const fwId = analysis.players[8].id
-    const gapBefore = shallow.find((p) => p.playerId === dfId)!.y - shallow.find((p) => p.playerId === fwId)!.y
-    const gapAfter =
-      result.positions.find((p) => p.playerId === dfId)!.y - result.positions.find((p) => p.playerId === fwId)!.y
-    expect(gapAfter).toBeCloseTo(gapBefore, 5)
-  })
-
   it('출전 선수가 없으면(빈 배열) null을 반환한다', () => {
     expect(shiftPositionsToPressingLevel([], gkId, '보통')).toBeNull()
+  })
+})
+
+// 회귀 테스트(2026-09-08, 2차) — "압박 라인이 높음까지밖에 없어 매우 높음까지
+// 있으면 좋겠어 ... 간격이 깨지면 그냥 비율만 유지하고 압박라인을 높아지게,
+// 간격은 줄어들어도 되니까 ... 공격수들이 반원 형태로 짤리더라". 예전엔 평행
+// 이동의 델타를 줄여서(전원이 덜 이동) 최전방이 0 밑으로 안 내려가게만 막았는데,
+// 그러면 대형 폭이 넓은 실제 포메이션은 "매우 높음"(목표 y=40)에 영영 도달하지
+// 못하고 "높음"쯤에서 멈췄다. 이제는 평행이동으로 최전방이 안전선 아래로
+// 내려갈 때만 "비율 유지 압축"으로 전환해 백라인은 목표에 정확히 맞추고
+// 최전방은 골라인에서 안전한 최소 y에 맞춘 뒤, 그 사이는 간격의 절대값이
+// 아니라 상대 비율을 유지한 채 압축한다.
+describe('shiftPositionsToPressingLevel — 비율 유지 압축', () => {
+  it('실제 4-3-3 base 대형에서도 "매우 높음"에 정확히 도달한다(예전엔 평행이동 델타가 줄어들어 못 미쳤음)', () => {
+    const result = shiftPositionsToPressingLevel(basePositions, gkId, '매우 높음')!
+    expect(pressingLineLevel(result.pressingLineY)).toBe('매우 높음')
+    expect(result.pressingLineY).toBeCloseTo(40, 5)
+  })
+
+  it('압축이 일어나도 최전방 선수가 골라인에서 안전한 최소 y 아래로는 안 내려간다(원·라벨이 안 잘림)', () => {
+    const result = shiftPositionsToPressingLevel(basePositions, gkId, '매우 높음')!
+    const outfield = result.positions.filter((p) => p.playerId !== gkId)
+    const frontY = Math.min(...outfield.map((p) => p.y))
+    // 정확한 안전 마진 상수는 lib 내부값이라 여유 있게 5 이상으로만 확인한다
+    // (선수 원 반지름 + 라벨 오프셋을 감안해 고른 값).
+    expect(frontY).toBeGreaterThanOrEqual(4)
+  })
+
+  it('간격의 절대값은 줄어들지만 상대 비율은 그대로 보존된다', () => {
+    // base 4-3-3: CB(index2, y=78, 백라인) - DM(index5, y=62) - ST(index9, y=22, 최전방).
+    // 원래 간격 비율(CB-DM : DM-ST) = 16:40 = 0.4
+    const cbId = analysis.players[2].id
+    const dmId = analysis.players[5].id
+    const stId = analysis.players[9].id
+    const result = shiftPositionsToPressingLevel(basePositions, gkId, '매우 높음')!
+    const at = (id: string) => result.positions.find((p) => p.playerId === id)!.y
+
+    const gapCbDmBefore = 78 - 62
+    const gapDmStBefore = 62 - 22
+    const gapCbDmAfter = at(cbId) - at(dmId)
+    const gapDmStAfter = at(dmId) - at(stId)
+
+    expect(gapCbDmAfter).toBeLessThan(gapCbDmBefore) // 절대 간격은 압축됨
+    expect(gapCbDmAfter / gapDmStAfter).toBeCloseTo(gapCbDmBefore / gapDmStBefore, 2) // 비율은 유지됨
+  })
+
+  it('평행이동만으로 충분한 단계(보통)는 여전히 간격을 그대로 보존한다(압축 안 씀)', () => {
+    const cbId = analysis.players[2].id
+    const dmId = analysis.players[5].id
+    const result = shiftPositionsToPressingLevel(basePositions, gkId, '보통')!
+    const at = (id: string) => result.positions.find((p) => p.playerId === id)!.y
+    expect(at(cbId) - at(dmId)).toBeCloseTo(78 - 62, 5) // 압축 없이 절대 간격 그대로
   })
 })

@@ -36,6 +36,17 @@ interface PressingLineProps {
    * 읽기 전용인 곳에는 이 prop을 넘기지 않는다(드래그 핸들 자체가 안 그려짐).
    */
   onDragY?: (pitchY: number) => void
+  /**
+   * onDragY와 함께 쓴다 — 드래그 시작/끝을 알려준다. 위치 변경은 보통
+   * `PlayerNode`가 0.6초짜리 국면-전환 모프 애니메이션으로 부드럽게
+   * 따라가는데, 드래그 중에도 그 딜레이가 그대로 적용되면 손가락/커서보다
+   * 선수가 한 박자 늦게 쫓아오는 것처럼 보인다(2026-09-08 실제 버그 —
+   * 400ms 뒤에 값을 읽었더니 아직 모프 중간값이었다). 호출부가 이 콜백으로
+   * 스토어의 `isPressingLineDragging`을 켜/꺼서 그동안은 `PlayerNode`가
+   * 자기 자신을 드래그할 때처럼 즉시(0초) 위치를 반영하게 한다.
+   */
+  onDragStart?: () => void
+  onDragEnd?: () => void
 }
 
 /**
@@ -48,6 +59,8 @@ export function PressingLine({
   orientation = 'portrait',
   labelY,
   onDragY,
+  onDragStart,
+  onDragEnd,
 }: PressingLineProps) {
   const svgRef = usePitchSvg()
   const y = pressingLineY ?? autoPressingLine(positions)
@@ -83,7 +96,9 @@ export function PressingLine({
           stroke="transparent"
           strokeWidth={4}
           style={{ cursor: 'ns-resize', touchAction: 'none' }}
+          onPanStart={onDragStart}
           onPan={handlePan}
+          onPanEnd={onDragEnd}
         />
       )}
       <text x={label.x} y={label.y} fill={LAYER_COLORS.pressingLine.color} fontSize={2} textAnchor={label.anchor}>

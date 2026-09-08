@@ -63,6 +63,7 @@ export function EditorPage() {
   const addOpponentsFromFormation = useAnalysisStore((s) => s.addOpponentsFromFormation)
   const removeOpponents = useAnalysisStore((s) => s.removeOpponents)
   const setPressingLineLevel = useAnalysisStore((s) => s.setPressingLineLevel)
+  const setPressingLineDragging = useAnalysisStore((s) => s.setPressingLineDragging)
   const removeAnnotation = useAnalysisStore((s) => s.removeAnnotation)
   const addPlayer = useAnalysisStore((s) => s.addPlayer)
   // 화살표 선택 상태. 피치 어디를 눌러도(pointerdown 버블링) 해제된다 —
@@ -125,6 +126,8 @@ export function EditorPage() {
                   positions={phase.positions}
                   pressingLineY={phase.pressingLineY}
                   onDragY={(y) => setPressingLineLevel(pressingLineLevel(y))}
+                  onDragStart={() => setPressingLineDragging(true)}
+                  onDragEnd={() => setPressingLineDragging(false)}
                 />
               )}
               {layers.overload && hasOpponent && <OverloadLayer phase={phase} />}

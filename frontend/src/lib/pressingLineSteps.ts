@@ -1,6 +1,8 @@
 import { clampCoord } from '@/lib/coords'
 import { pressingLineLevel, type PressingLineLevel } from '@/lib/compactness'
+import { circularRadius } from '@/lib/pitchMarkings'
 import { positionInfoAt } from '@/lib/positions'
+import { PLAYER_COLORS } from '@/lib/theme'
 import type { Player, PlayerPosition } from '@/types/analysis'
 
 /**
@@ -24,6 +26,13 @@ const STEP_TARGET_Y: Record<PressingLineLevel, number> = {
 
 export const PRESSING_LINE_LEVELS: PressingLineLevel[] = ['매우 높음', '높음', '보통', '낮음', '매우 낮음']
 
+// 선수 원(PLAYER_COLORS.own.radius를 축 보정한 ry) + 역할 라벨(원 위 -1.4)이
+// 골라인에서 안 잘리게 최전방 선수가 못 넘어갈 최소 y(2026-09-08 사용자
+// 리포트 — "공격수들이 반원 형태로 짤리더라". circularRadius(2.6).ry ≈
+// 1.68 + 라벨 오프셋 1.4 ≈ 3.08 위까지 그려지므로 여유를 둬 4로 잡는다).
+const OWN_RADIUS_Y = circularRadius(PLAYER_COLORS.own.radius).ry
+const FORWARD_SAFE_MARGIN = Math.ceil(OWN_RADIUS_Y + 1.4) + 1
+
 /** GK는 항상 players 배열의 0번(formations.ts 규약)이지만, 만일을 대비해 실제로 찾는다. */
 export function findGkPlayerId(players: Player[], formation: string): string | undefined {
   const gkIndex = players.findIndex((_, i) => positionInfoAt(formation, i)?.line === 'GK')
@@ -44,13 +53,21 @@ export function currentPressingLineLevel(positions: PlayerPosition[], gkPlayerId
 }
 
 /**
- * targetLevel에 맞는 y로 GK를 제외한 전원을 같은 델타만큼 평행 이동한다 —
- * 순수 평행이동이라 공격/미드/수비 라인 사이 간격(비율)이 자동으로
- * 그대로 유지된다. GK는 움직이지 않는다(압박 라인은 백라인 얘기지 GK
- * 얘기가 아니다 — 실제로도 라인을 아무리 올려도 GK는 자기 골문 근처에
- * 남는다). 이동 후 누구도 피치 밖(0~99.9)으로 안 나가게 **델타 자체를**
- * 줄인다 — 선수 개개인을 따로 clamp하면 그 선수만 대형에서 어긋나
- * 간격 비율이 깨진다.
+ * targetLevel에 맞는 y로 GK를 제외한 전원을 옮긴다. 두 단계로 시도한다:
+ *
+ * 1. **평행이동 우선** — 같은 델타를 전원에 더한다. 라인 사이 간격(절대값)이
+ *    그대로 보존되는 가장 좋은 경우다. 이동 후에도 최전방이 안전선
+ *    (`FORWARD_SAFE_MARGIN`) 아래로 안 내려가면 이걸로 끝낸다.
+ * 2. **비율 유지 압축** — 평행이동하면 최전방이 골라인에 너무 붙어(원이
+ *    잘림) 안전선을 넘어갈 때만 쓴다. 백라인은 목표 y에 정확히 맞추고,
+ *    최전방은 안전선에 맞춘 뒤, 그 사이 나머지 선수는 **간격의 절대값이
+ *    아니라 상대적 비율**을 유지한 채 압축한다(2026-09-08, 2차 요청 —
+ *    "간격이 깨지면 그냥 비율만 유지하고 압박 라인을 높아지게, 간격은
+ *    줄어들어도 되니까"). 그래야 "매우 높음"처럼 원래 대형 폭이 안전선
+ *    안에 다 못 들어가는 극단적인 단계도 실제로 도달할 수 있다.
+ *
+ * GK는 어느 경우든 움직이지 않는다(압박 라인은 백라인 얘기지 GK 얘기가
+ * 아니다).
  */
 export function shiftPositionsToPressingLevel(
   positions: PlayerPosition[],
@@ -60,14 +77,35 @@ export function shiftPositionsToPressingLevel(
   const outfield = positions.filter((p) => p.playerId !== gkPlayerId)
   if (outfield.length === 0) return null
 
-  const currentY = Math.max(...outfield.map((p) => p.y))
-  const minY = Math.min(...outfield.map((p) => p.y))
-  const maxY = currentY
-  const rawDelta = STEP_TARGET_Y[targetLevel] - currentY
-  const delta = Math.max(-minY, Math.min(rawDelta, 99.9 - maxY))
+  const currentBackY = Math.max(...outfield.map((p) => p.y))
+  const currentFrontY = Math.min(...outfield.map((p) => p.y))
+  const targetBackY = STEP_TARGET_Y[targetLevel]
+
+  const shiftDelta = targetBackY - currentBackY
+  const shiftedFrontY = currentFrontY + shiftDelta
+
+  let mapY: (y: number) => number
+  let resultBackY: number
+
+  if (shiftedFrontY >= FORWARD_SAFE_MARGIN) {
+    // 평행이동으로 충분하다 — 간격을 그대로 보존한다.
+    mapY = (y) => clampCoord(y + shiftDelta)
+    resultBackY = targetBackY
+  } else {
+    // 평행이동하면 최전방이 골라인에 너무 붙는다 — 백라인은 목표에 정확히
+    // 맞추고 최전방은 안전선에 맞춘 뒤, 그 사이는 비율로 압축한다.
+    const oldSpan = currentBackY - currentFrontY
+    const newFrontY = FORWARD_SAFE_MARGIN
+    const newSpan = targetBackY - newFrontY
+    mapY =
+      oldSpan < 1e-6
+        ? () => clampCoord(targetBackY) // 전원이 같은 y였던 극단적 경우 — 다 같이 목표로
+        : (y) => clampCoord(newFrontY + ((y - currentFrontY) / oldSpan) * newSpan)
+    resultBackY = targetBackY
+  }
 
   return {
-    positions: positions.map((p) => (p.playerId === gkPlayerId ? p : { ...p, y: clampCoord(p.y + delta) })),
-    pressingLineY: currentY + delta,
+    positions: positions.map((p) => (p.playerId === gkPlayerId ? p : { ...p, y: mapY(p.y) })),
+    pressingLineY: resultBackY,
   }
 }
