@@ -50,14 +50,17 @@ export function MatchupView({
   }
 
   // 압박 라인은 "수비하는 쪽"의 것만 보여준다 — 이 뷰의 관심사는 그 블록이
-  // 어디서 시작되는지다. 값이 수동 지정돼 있으면 미러링해서 넘기고, 없으면
-  // 이미 미러링된 좌표 배열을 그대로 넘겨 PressingLine이 자동 산출하게 둔다.
-  // null·undefined 처리의 실제 버그 이력은 resolveDefendingPressingLineY 참조.
+  // 어디서 시작되는지다. 자동 산출은 항상 각 팀 고유(미러링 전) 좌표로
+  // 계산한 뒤 B가 수비인 경우에만 결과를 미러링한다 — 미러링된 좌표에
+  // 자동 산출을 직접 돌리면 GK 판별이 뒤집혀 버리는 실제 버그 이력은
+  // resolveDefendingPressingLineY 참조.
   const defendingPositions = phaseA === 'defense' ? dataA.positions : positionsB
   const defendingPressingLineY = resolveDefendingPressingLineY(
     phaseA === 'defense',
     dataA.pressingLineY,
     dataB.pressingLineY,
+    dataA.positions,
+    dataB.positions,
   )
 
   const labelA = analysisA.match.homeTeam

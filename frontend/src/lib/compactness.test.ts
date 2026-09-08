@@ -39,13 +39,19 @@ describe('computeCompactness', () => {
 })
 
 describe('pressingLineLevel', () => {
-  it('y가 작을수록(상대 골문에 가까울수록) 높은 라인으로 분류한다', () => {
+  it('하프라인(y=50) 이내는 매우 높음으로 분류한다(2026-09-08 재조정)', () => {
     expect(pressingLineLevel(0)).toBe('매우 높음')
-    expect(pressingLineLevel(19)).toBe('매우 높음')
-    expect(pressingLineLevel(20)).toBe('높음')
-    expect(pressingLineLevel(50)).toBe('보통')
-    expect(pressingLineLevel(65)).toBe('낮음')
-    expect(pressingLineLevel(80)).toBe('매우 낮음')
+    expect(pressingLineLevel(50)).toBe('매우 높음')
+  })
+
+  it('나머지 경계값도 자기 진영 쪽으로 촘촘하게 분류한다', () => {
+    expect(pressingLineLevel(51)).toBe('높음')
+    expect(pressingLineLevel(65)).toBe('높음')
+    expect(pressingLineLevel(66)).toBe('보통')
+    expect(pressingLineLevel(80)).toBe('보통')
+    expect(pressingLineLevel(81)).toBe('낮음')
+    expect(pressingLineLevel(90)).toBe('낮음')
+    expect(pressingLineLevel(91)).toBe('매우 낮음')
     expect(pressingLineLevel(100)).toBe('매우 낮음')
   })
 })

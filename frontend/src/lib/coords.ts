@@ -1,3 +1,6 @@
+import { autoPressingLine } from '@/lib/compactness'
+import type { PlayerPosition } from '@/types/analysis'
+
 /**
  * SVG viewBox="0 0 100 100" + preserveAspectRatio를 쓰면 화면 비율에 따라
  * 좌우 또는 상하 여백이 생긴다. getScreenCTM().inverse()로 이 여백을 뺀
@@ -62,12 +65,27 @@ export function transposeRect(
  * 100)이라는 잘못된 라인을 계산해버린다(2026-09-07 실제 버그 — 전술
  * 대결에서 공수를 교대해도 한쪽 방향은 압박 라인이 항상 "매우 낮음"에
  * 고정됐었다). `== null`로 null·undefined 둘 다 "미설정"으로 취급해야 한다.
+ *
+ * pressingLineY가 미설정이면 자동 산출(`autoPressingLine`)하는데, 반드시
+ * **미러링하기 전(각 팀 고유 좌표계)** 포지션으로 계산해야 한다(2026-09-08
+ * 실제 버그 — "A공격이면 B팀 수비라인이 압박라인이어야 하는데 이상하게
+ * 돼있어"). `autoPressingLine`은 "y가 가장 큰 선수 = GK"로 가정하는데
+ * (자기 골문이 y=100인 고유 좌표계에서만 성립), 이미 미러링된(y'=100-y)
+ * 좌표 배열에 그대로 적용하면 GK는 y'가 가장 작은 선수가 돼버려서 대신
+ * 가장 전진한 공격수가 "GK로 오인돼 제외"되고 두 번째로 전진한 선수(대개
+ * 윙어)의 y가 압박 라인으로 잘못 뽑힌다 — 실제 백라인보다 훨씬 낮은
+ * (전진한) 라인으로 보이는 원인이었다. 자동 산출은 항상 각 팀의 원본
+ * 좌표(dataAPositions/dataBPositions)로 계산하고, B가 수비인 경우에만
+ * 그 결과값(스칼라)을 마지막에 미러링한다.
  */
 export function resolveDefendingPressingLineY(
   aIsDefending: boolean,
   dataAPressingLineY: number | null | undefined,
   dataBPressingLineY: number | null | undefined,
-): number | undefined {
-  if (aIsDefending) return dataAPressingLineY ?? undefined
-  return dataBPressingLineY == null ? undefined : 100 - dataBPressingLineY
+  dataAPositions: PlayerPosition[],
+  dataBPositions: PlayerPosition[],
+): number {
+  if (aIsDefending) return dataAPressingLineY ?? autoPressingLine(dataAPositions)
+  const y = dataBPressingLineY ?? autoPressingLine(dataBPositions)
+  return 100 - y
 }
