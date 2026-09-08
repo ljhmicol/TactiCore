@@ -76,6 +76,7 @@ interface AnalysisStore {
   addAnnotation: (type: AnnotationType, from: Point, to: Point, curved?: boolean) => void // 현재 국면에 추가
   removeAnnotation: (id: string) => void
   addOpponents: () => void // 현재 국면에 상대팀 11명 기본 배치 추가 (자팀 포메이션을 하프라인 기준 대칭)
+  addOpponentsFromFormation: (formationName: string) => void // 자팀 대신 지정한 포메이션 템플릿을 대칭 배치 (TO-DO 4번)
   removeOpponents: () => void
   setComment: (phase: PhaseType, text: string) => void
   setSummary: (text: string) => void
@@ -228,6 +229,22 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
     const phase = analysis.phases[currentPhase]
     // 자팀 포메이션을 하프라인 기준으로 대칭 이동한 좌표를 기본값으로 준다 (y' = 100 - y).
     const opp = phase.positions.map((p) => ({ x: p.x, y: 100 - p.y }))
+    set({
+      analysis: { ...analysis, phases: { ...analysis.phases, [currentPhase]: { ...phase, opponentPositions: opp } } },
+      isDirty: true,
+    })
+  },
+
+  addOpponentsFromFormation: (formationName) => {
+    const { analysis, currentPhase } = get()
+    if (!analysis) return
+    const coords = FORMATIONS[formationName]
+    if (!coords) return
+    const phase = analysis.phases[currentPhase]
+    // addOpponents와 같은 대칭 이동(y' = 100 - y) — 자팀 현재 배치 대신
+    // 상대가 고를 수 있는 다른 포메이션 템플릿(예: 4-4-2 로우블록)을 그
+    // 대칭으로 배치한다(TO-DO 4번, "지금은 11개 점을 일일이 찍어야 함").
+    const opp = coords.map((p) => ({ x: p.x, y: 100 - p.y }))
     set({
       analysis: { ...analysis, phases: { ...analysis.phases, [currentPhase]: { ...phase, opponentPositions: opp } } },
       isDirty: true,

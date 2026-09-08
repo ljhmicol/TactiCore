@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 
+import { FORMATIONS } from '@/lib/formations'
 import { analysisSchema } from '@/lib/schema'
 
 import { createEmptyAnalysis, useAnalysisStore } from './analysisStore'
@@ -95,5 +96,61 @@ describe('analysisStore — closeAnalysis', () => {
     expect(state.currentPhase).toBe('base')
     expect(state.previousPhase).toBeNull()
     expect(state.isDirty).toBe(false)
+  })
+})
+
+/** TO-DO 4 — 상대 포메이션 템플릿을 대칭 배치해 오버로드 레이어를 바로 켤 수 있게 한다. */
+describe('analysisStore — addOpponentsFromFormation', () => {
+  beforeEach(() => {
+    const analysis = createEmptyAnalysis('4-3-3', {
+      matchName: '테스트',
+      homeTeam: '홈',
+      awayTeam: '원정',
+      matchDate: '2026-09-01',
+      analyzedTeam: 'home',
+    })
+    useAnalysisStore.getState().loadAnalysis(analysis)
+  })
+
+  it('지정한 포메이션 템플릿을 하프라인 기준(y=100-y)으로 대칭 이동해 현재 국면에 넣는다', () => {
+    useAnalysisStore.getState().addOpponentsFromFormation('4-4-2')
+    const { analysis, currentPhase } = useAnalysisStore.getState()
+    const opp = analysis!.phases[currentPhase].opponentPositions
+    expect(opp).toHaveLength(11)
+    const template = FORMATIONS['4-4-2']
+    opp!.forEach((p, i) => {
+      expect(p.x).toBe(template[i].x)
+      expect(p.y).toBe(100 - template[i].y)
+    })
+  })
+
+  it('자팀 포메이션과 무관하게 선택한 상대 포메이션 모양을 쓴다(자팀은 4-3-3, 상대는 4-4-2)', () => {
+    useAnalysisStore.getState().addOpponentsFromFormation('4-4-2')
+    const { analysis, currentPhase } = useAnalysisStore.getState()
+    const opp = analysis!.phases[currentPhase].opponentPositions
+    // 4-3-3(자팀)의 미드필더 3명 x좌표(32/50/68)와 달리 4-4-2 상대는 미드필더 4명이다.
+    expect(opp).not.toHaveLength(0)
+    expect(opp!.map((p) => p.x)).not.toEqual(analysis!.phases[currentPhase].positions.map((p) => p.x))
+  })
+
+  it('현재 국면에만 적용되고 다른 국면은 그대로 둔다', () => {
+    useAnalysisStore.getState().switchPhase('attack')
+    useAnalysisStore.getState().addOpponentsFromFormation('3-5-2')
+    const { analysis } = useAnalysisStore.getState()
+    expect(analysis!.phases.attack.opponentPositions).toHaveLength(11)
+    expect(analysis!.phases.base.opponentPositions).toBeUndefined()
+    expect(analysis!.phases.defense.opponentPositions).toBeUndefined()
+  })
+
+  it('존재하지 않는 포메이션 이름은 무시하고 상태를 바꾸지 않는다', () => {
+    const before = useAnalysisStore.getState().analysis
+    useAnalysisStore.getState().addOpponentsFromFormation('존재하지-않음')
+    expect(useAnalysisStore.getState().analysis).toBe(before)
+  })
+
+  it('결과가 analysisSchema를 통과한다', () => {
+    useAnalysisStore.getState().addOpponentsFromFormation('4-4-2')
+    const result = analysisSchema.safeParse(useAnalysisStore.getState().analysis)
+    expect(result.success).toBe(true)
   })
 })

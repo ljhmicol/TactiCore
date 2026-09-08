@@ -25,6 +25,8 @@ import { Pitch } from '@/components/pitch/Pitch'
 import { PlayerNode } from '@/components/pitch/PlayerNode'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { FORMATION_NAMES } from '@/lib/formations'
 import { useAnalysisStore } from '@/store/analysisStore'
 
 /**
@@ -57,6 +59,7 @@ export function EditorPage() {
   const layers = useAnalysisStore((s) => s.layers)
   const drawTool = useAnalysisStore((s) => s.drawTool)
   const addOpponents = useAnalysisStore((s) => s.addOpponents)
+  const addOpponentsFromFormation = useAnalysisStore((s) => s.addOpponentsFromFormation)
   const removeOpponents = useAnalysisStore((s) => s.removeOpponents)
   const removeAnnotation = useAnalysisStore((s) => s.removeAnnotation)
   const addPlayer = useAnalysisStore((s) => s.addPlayer)
@@ -143,11 +146,29 @@ export function EditorPage() {
               <DrawOverlay tool={drawTool} />
             </Pitch>
           </div>
-          <div className="flex w-full max-w-md items-center justify-between gap-3">
+          <div className="flex w-full max-w-md flex-wrap items-center justify-between gap-3">
             <LayerToggleChips hasOpponent={hasOpponent} />
-            <Button variant="outline" size="sm" onClick={hasOpponent ? removeOpponents : addOpponents}>
-              {hasOpponent ? '상대팀 제거' : '상대팀 추가'}
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* 상대 포메이션을 고르면 그 모양을 하프라인 기준 대칭으로 즉시 배치한다
+                  (TO-DO 4번) — "상대팀 추가" 버튼(자팀과 동일한 배치)과 별개로,
+                  자팀과 다른 모양(예: 4-4-2 로우블록)의 상대를 11개 점을 일일이
+                  드래그하지 않고 바로 켤 수 있게 한다. */}
+              <Select onValueChange={addOpponentsFromFormation}>
+                <SelectTrigger className="h-9 w-[128px]" aria-label="상대 포메이션 선택">
+                  <SelectValue placeholder="상대 포메이션" />
+                </SelectTrigger>
+                <SelectContent>
+                  {FORMATION_NAMES.map((name) => (
+                    <SelectItem key={name} value={name}>
+                      {name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button variant="outline" size="sm" onClick={hasOpponent ? removeOpponents : addOpponents}>
+                {hasOpponent ? '상대팀 제거' : '상대팀 추가'}
+              </Button>
+            </div>
           </div>
         </div>
 
