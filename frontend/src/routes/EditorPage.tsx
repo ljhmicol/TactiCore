@@ -26,7 +26,7 @@ import { PlayerNode } from '@/components/pitch/PlayerNode'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import type { PressingLineLevel } from '@/lib/compactness'
+import { pressingLineLevel, type PressingLineLevel } from '@/lib/compactness'
 import { FORMATION_NAMES } from '@/lib/formations'
 import { currentPressingLineLevel, findGkPlayerId, PRESSING_LINE_LEVELS } from '@/lib/pressingLineSteps'
 import { useAnalysisStore } from '@/store/analysisStore'
@@ -121,7 +121,11 @@ export function EditorPage() {
               {layers.channelGrid && <ChannelGrid halfSpaces={layers.halfSpaces} />}
               {layers.compactness && <CompactnessBox positions={phase.positions} />}
               {layers.pressingLine && (
-                <PressingLine positions={phase.positions} pressingLineY={phase.pressingLineY} />
+                <PressingLine
+                  positions={phase.positions}
+                  pressingLineY={phase.pressingLineY}
+                  onDragY={(y) => setPressingLineLevel(pressingLineLevel(y))}
+                />
               )}
               {layers.overload && hasOpponent && <OverloadLayer phase={phase} />}
               {showGhost && previousPhase && (

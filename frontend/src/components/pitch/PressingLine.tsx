@@ -1,6 +1,11 @@
+import { motion, type PanInfo } from 'framer-motion'
+
 import { autoPressingLine, pressingLineLevel } from '@/lib/compactness'
+import { clampCoord, clientToPitch } from '@/lib/coords'
 import { LAYER_COLORS } from '@/lib/theme'
 import type { PlayerPosition } from '@/types/analysis'
+
+import { usePitchSvg } from './PitchContext'
 
 interface PressingLineProps {
   positions: PlayerPosition[]
@@ -20,13 +25,31 @@ interface PressingLineProps {
    * 판정하게 한다 — 그리기 위치(y)와 라벨 판정(labelY)을 분리한다.
    */
   labelY?: number
+  /**
+   * 편집기 전용(portrait만 지원) — 주어지면 라인을 위아래로 드래그할 수
+   * 있게 된다(2026-09-08 사용자 요청: "라인을 위아래로 드래그해서 압박
+   * 수준을 수정"). 드래그 중 매 순간의 피치 y좌표를 그대로 콜백에 넘긴다 —
+   * 호출부(EditorPage)가 `pressingLineLevel(y)`로 가장 가까운 5단계를
+   * 찾아 `setPressingLineLevel`을 호출하므로, 드래그하는 동안 포인터가
+   * 단계 경계(50/65/80/90)를 넘을 때마다 대형 전체가 그 단계로 스냅된다 —
+   * FM 슬라이더의 "딸깍" 걸리는 느낌과 같다. PNG/GIF 카드·전술 대결처럼
+   * 읽기 전용인 곳에는 이 prop을 넘기지 않는다(드래그 핸들 자체가 안 그려짐).
+   */
+  onDragY?: (pitchY: number) => void
 }
 
 /**
  * pressingLineY가 수동 지정돼 있으면 그 값을 그대로 쓰고, 없으면 자동 산출한다
  * (GK 제외 최대 y). 사용자가 수동 지정한 경우 자동 산출은 호출되지 않는다.
  */
-export function PressingLine({ positions, pressingLineY, orientation = 'portrait', labelY }: PressingLineProps) {
+export function PressingLine({
+  positions,
+  pressingLineY,
+  orientation = 'portrait',
+  labelY,
+  onDragY,
+}: PressingLineProps) {
+  const svgRef = usePitchSvg()
   const y = pressingLineY ?? autoPressingLine(positions)
   const landscape = orientation === 'landscape'
   const line = landscape ? { x1: 100 - y, y1: 0, x2: 100 - y, y2: 100 } : { x1: 0, y1: y, x2: 100, y2: y }
@@ -42,9 +65,27 @@ export function PressingLine({ positions, pressingLineY, orientation = 'portrait
         : { x: landscapeX, y: 3, anchor: 'middle' as const }
     : { x: 98, y: y - 1.2, anchor: 'end' as const }
 
+  const handlePan = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
+    if (!onDragY || !svgRef.current) return
+    const next = clientToPitch(svgRef.current, info.point.x, info.point.y)
+    onDragY(clampCoord(next.y))
+  }
+
   return (
     <g>
       <line {...line} stroke={LAYER_COLORS.pressingLine.color} strokeWidth={LAYER_COLORS.pressingLine.width} />
+      {onDragY && (
+        // 시각적 라인(위)은 얇아서 잡기 어렵다 — 훨씬 굵은 투명 라인을 위에
+        // 겹쳐 드래그 히트 영역을 넓힌다(AnnotationLayer의 클릭 판정 라인과
+        // 같은 방식).
+        <motion.line
+          {...line}
+          stroke="transparent"
+          strokeWidth={4}
+          style={{ cursor: 'ns-resize', touchAction: 'none' }}
+          onPan={handlePan}
+        />
+      )}
       <text x={label.x} y={label.y} fill={LAYER_COLORS.pressingLine.color} fontSize={2} textAnchor={label.anchor}>
         압박 라인 {pressingLineLevel(labelY ?? y)}
       </text>
