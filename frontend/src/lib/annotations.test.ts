@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
-import { ANNOTATION_MIN_LENGTH, arrowGeometry, curvedArrowGeometry } from '@/lib/annotations'
+import {
+  ANNOTATION_MIN_LENGTH,
+  arrowGeometry,
+  buildPassChains,
+  chainSamplePoints,
+  curvedArrowGeometry,
+} from '@/lib/annotations'
 import { analysisSchema } from '@/lib/schema'
+import type { Annotation } from '@/types/analysis'
 
 const PITCH_LENGTH_M = 105
 const PITCH_WIDTH_M = 68
@@ -71,6 +78,66 @@ describe('curvedArrowGeometry', () => {
     const geo = curvedArrowGeometry(p, p)
     expect(geo.control).toEqual(p)
     expect(geo.head).toEqual([p, p, p])
+  })
+})
+
+type Point = { x: number; y: number }
+
+function pass(id: string, from: Point, to: Point): Annotation {
+  return { id, type: 'pass', from, to }
+}
+
+describe('buildPassChains', () => {
+  it('연결 안 된 패스는 각자 길이 1짜리 체인이다', () => {
+    const a = pass('a', { x: 10, y: 80 }, { x: 30, y: 60 })
+    const b = pass('b', { x: 70, y: 40 }, { x: 90, y: 20 }) // a.to와 안 이어짐
+    const chains = buildPassChains([a, b])
+    expect(chains).toHaveLength(2)
+    expect(chains.map((c) => c.map((p) => p.id))).toEqual(expect.arrayContaining([['a'], ['b']]))
+  })
+
+  it('수비수→미드필더→공격수처럼 끝점이 이어지면 순서대로 한 체인이 된다', () => {
+    const df = pass('df-mf', { x: 30, y: 85 }, { x: 45, y: 55 })
+    const mf = pass('mf-fw', { x: 45, y: 55 }, { x: 55, y: 20 }) // df.to와 정확히 일치
+    // 배열 순서를 일부러 뒤섞어도 체인은 끝점을 따라 올바른 순서로 재구성돼야 한다
+    const chains = buildPassChains([mf, df])
+    expect(chains).toHaveLength(1)
+    expect(chains[0].map((p) => p.id)).toEqual(['df-mf', 'mf-fw'])
+  })
+
+  it('정확히 같은 픽셀이 아니어도 3유닛 이내면 이어진 것으로 본다', () => {
+    const df = pass('df-mf', { x: 30, y: 85 }, { x: 45, y: 55 })
+    const mf = pass('mf-fw', { x: 46.5, y: 56 }, { x: 55, y: 20 }) // from이 df.to와 1.8유닛 정도 차이
+    const chains = buildPassChains([df, mf])
+    expect(chains).toHaveLength(1)
+    expect(chains[0].map((p) => p.id)).toEqual(['df-mf', 'mf-fw'])
+  })
+
+  it('3단 체인(수비수→미드필더→공격수)도 순서대로 이어진다', () => {
+    const df = pass('df-mf', { x: 30, y: 85 }, { x: 45, y: 55 })
+    const mf = pass('mf-fw', { x: 45, y: 55 }, { x: 55, y: 20 })
+    const fw = pass('fw-shot', { x: 55, y: 20 }, { x: 50, y: 5 })
+    const chains = buildPassChains([fw, df, mf])
+    expect(chains).toHaveLength(1)
+    expect(chains[0].map((p) => p.id)).toEqual(['df-mf', 'mf-fw', 'fw-shot'])
+  })
+
+  it('빈 배열에서도 죽지 않는다', () => {
+    expect(buildPassChains([])).toEqual([])
+  })
+})
+
+describe('chainSamplePoints', () => {
+  it('직선 체인은 이음매 중복 없이 점을 이어붙인다', () => {
+    const df = pass('df-mf', { x: 30, y: 85 }, { x: 45, y: 55 })
+    const mf = pass('mf-fw', { x: 45, y: 55 }, { x: 55, y: 20 })
+    const points = chainSamplePoints([df, mf])
+    // 직선은 2점씩이라 이음매(45,55) 중복 제거하면 3점
+    expect(points).toEqual([
+      { x: 30, y: 85 },
+      { x: 45, y: 55 },
+      { x: 55, y: 20 },
+    ])
   })
 })
 

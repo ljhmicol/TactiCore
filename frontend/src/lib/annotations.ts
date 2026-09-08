@@ -1,5 +1,5 @@
 import { PITCH_LENGTH_M, PITCH_WIDTH_M } from '@/lib/zones'
-import type { AnnotationType, Point } from '@/types/analysis'
+import type { Annotation, AnnotationType, Point } from '@/types/analysis'
 
 /**
  * 화살표(전술 그리기) 렌더링 지원.
@@ -139,6 +139,76 @@ export function bezierPoint(from: Point, control: Point, to: Point, t: number): 
 /** 화살촉 배지를 피하면서 클릭 지점(선분 중점)을 구한다. */
 export function arrowMidpoint(a: { from: Point; to: Point }): Point {
   return { x: (a.from.x + a.to.x) / 2, y: (a.from.y + a.to.y) / 2 }
+}
+
+/** 공 애니메이션이 곡선을 따라가도록 샘플링하는 t값(PassBall/RunGhost 공용). */
+export const BALL_SAMPLE_TS = [0, 0.14, 0.28, 0.42, 0.57, 0.71, 0.85, 1]
+
+/** 화살표 하나를 따라가는 점 목록(직선이면 양끝 2개, 곡선이면 베지어 샘플). */
+export function annotationSamplePoints(ann: { from: Point; to: Point; curved?: boolean }): Point[] {
+  if (!ann.curved) return [ann.from, ann.to]
+  const { control } = curvedArrowGeometry(ann.from, ann.to)
+  return BALL_SAMPLE_TS.map((t) => bezierPoint(ann.from, control, ann.to, t))
+}
+
+const CHAIN_ENDPOINT_EPS = 3 // 이 거리(피치 좌표 단위) 이내면 "같은 지점"으로 본다
+
+/**
+ * 연결된 패스를 하나의 흐름으로 묶는다 — "수비수에서 미드필더로, 미드필더
+ * 에서 공격수로 이어지게" (2026-09-07 요청). 패스는 선수에 부착되지 않는
+ * 자유 좌표 화살표라(4단계 §5.1) 선수 ID로 연결을 판단할 수 없어, 대신
+ * 한 패스의 끝점(to)이 다른 패스의 시작점(from)과 가까우면(3유닛 이내)
+ * 이어진 것으로 본다. 사용자가 손으로 그리며 정확히 같은 픽셀에서 시작하기
+ * 어려우니 완전 일치 대신 근접 판정을 쓴다.
+ *
+ * 반환값은 체인들의 배열이다 — 아무와도 안 이어진 패스는 길이 1짜리
+ * 체인으로 그대로 돌아온다(기존 단일 공 애니메이션과 동일하게 동작).
+ */
+export function buildPassChains(passes: Annotation[]): Annotation[][] {
+  const isNear = (a: Point, b: Point) => Math.hypot(a.x - b.x, a.y - b.y) <= CHAIN_ENDPOINT_EPS
+  const findNext = (current: Annotation, usedIds: Set<string>) =>
+    passes.find((p) => !usedIds.has(p.id) && p.id !== current.id && isNear(current.to, p.from))
+  const hasPredecessor = (ann: Annotation) => passes.some((p) => p.id !== ann.id && isNear(p.to, ann.from))
+
+  const used = new Set<string>()
+  const chains: Annotation[][] = []
+
+  // 선행 패스가 없는(체인의 시작일 수 있는) 것부터 순서대로 이어간다.
+  for (const start of passes.filter((p) => !hasPredecessor(p))) {
+    if (used.has(start.id)) continue
+    const chain: Annotation[] = [start]
+    used.add(start.id)
+    let current = start
+    while (chain.length < passes.length) {
+      const next = findNext(current, used)
+      if (!next) break
+      chain.push(next)
+      used.add(next.id)
+      current = next
+    }
+    chains.push(chain)
+  }
+
+  // 순환처럼 "시작"이 없는 패스가 남아 있으면 각자 단독 체인으로 처리한다
+  // (사이클을 무한히 따라가지 않도록 하는 안전장치).
+  for (const p of passes) {
+    if (!used.has(p.id)) {
+      chains.push([p])
+      used.add(p.id)
+    }
+  }
+
+  return chains
+}
+
+/** 체인(연결된 패스들)을 따라가는 점 목록 — 이음매의 중복점은 하나로 합친다. */
+export function chainSamplePoints(chain: Annotation[]): Point[] {
+  const points: Point[] = []
+  for (const ann of chain) {
+    const segment = annotationSamplePoints(ann)
+    points.push(...(points.length > 0 ? segment.slice(1) : segment))
+  }
+  return points
 }
 
 export const ANNOTATION_MIN_LENGTH = 2.5 // 이보다 짧은 드래그는 실수로 간주해 버린다

@@ -1,6 +1,15 @@
 import { motion } from 'framer-motion'
+import { useMemo } from 'react'
 
-import { ANNOTATION_STYLES, arrowGeometry, arrowMidpoint, bezierPoint, curvedArrowGeometry } from '@/lib/annotations'
+import {
+  ANNOTATION_STYLES,
+  annotationSamplePoints,
+  arrowGeometry,
+  arrowMidpoint,
+  buildPassChains,
+  chainSamplePoints,
+  curvedArrowGeometry,
+} from '@/lib/annotations'
 import { PLAYER_COLORS } from '@/lib/theme'
 import { circularRadius } from '@/lib/pitchMarkings'
 import type { Annotation, Point } from '@/types/analysis'
@@ -18,7 +27,7 @@ interface AnnotationLayerProps {
 const BADGE_RADIUS = circularRadius(1.7)
 const DELETE_OFFSET = 2.2 // 선분 중점에서 화살표 진행 방향의 수직으로 치울 거리
 const BALL_RADIUS = circularRadius(1.1)
-const BALL_SAMPLE_TS = [0, 0.14, 0.28, 0.42, 0.57, 0.71, 0.85, 1] // 곡선 패스 애니메이션용 베지어 샘플
+const RUN_GHOST_RADIUS = circularRadius(PLAYER_COLORS.own.radius) // 선수 노드와 같은 크기
 
 /**
  * 국면의 화살표(움직임/패스)를 그린다. 편집 화면과 PNG 카드(ShareCard)가 같은
@@ -28,10 +37,20 @@ const BALL_SAMPLE_TS = [0, 0.14, 0.28, 0.42, 0.57, 0.71, 0.85, 1] // 곡선 패�
  * 균일 축척 기하를 쓴다. 굵기는 기존 레이어(압박라인 0.5)와 같은 user-unit 관례를
  * 따른다 — 화면·카드 크기에 비례해 보인다.
  *
- * pass 타입 화살표에는 시작→끝을 반복 왕복하는 작은 공(PassBall)을 얹는다
- * (2026-09-07 — "패스가 연결되는 걸 시각적으로 보여지게").
+ * pass 화살표는 끝점이 이어지면(수비수→미드필더→공격수처럼) 하나의 공이
+ * 전체 경로를 순서대로 흐르게 한다(buildPassChains, 2026-09-07 — "패스가
+ * 수비수에서 미드필더로 가고, 공격수로 이어지게"). run 화살표는 선수 색
+ * 반투명 원(RunGhost)이 화살표 방향으로 왕복한다 — "선수가 화살표로
+ * 이동하는 방향으로 이동하는 모션" 요청. 둘 다 화살표 자체(모양·클릭
+ * 판정)는 원래 개별 annotation 단위 그대로다 — 공/유령 애니메이션만
+ * 체인 또는 개별 단위로 얹힌다.
  */
 export function AnnotationLayer({ annotations, interactive }: AnnotationLayerProps) {
+  const passChains = useMemo(
+    () => buildPassChains(annotations.filter((a) => a.type === 'pass')),
+    [annotations],
+  )
+
   return (
     <g>
       {annotations.map((ann) => {
@@ -89,52 +108,121 @@ export function AnnotationLayer({ annotations, interactive }: AnnotationLayerPro
               opacity={0.95}
               pointerEvents="none"
             />
-            {ann.type === 'pass' && <PassBall annotation={ann} control={curvedGeo?.control} />}
+            {ann.type === 'run' && <RunGhost annotation={ann} />}
             {selected && interactive && <DeleteBadge annotation={ann} onRemove={interactive.onRemove} />}
           </g>
         );
       })}
+      {passChains.map((chain) => (
+        <PassChainBall key={chain.map((a) => a.id).join('-')} chain={chain} />
+      ))}
     </g>
   )
 }
 
 /**
- * 패스 화살표를 따라 시작점→끝점으로 반복 이동하는 작은 공 — "패스가
- * 실제로 연결되는 걸 시각적으로 보여지게" (2026-09-07 요청). 화살표는
- * 방향만 알려줄 뿐 "볼이 거기로 간다"는 느낌은 약해서, 실제로 움직이는
- * 공을 얹었다. cx/cy를 직접 animate하는 방식은 PlayerNode와 같다 —
- * preserveAspectRatio="none" 환경에서 g의 transform 대신 도형 고유
- * 속성을 animate해야 어긋나지 않는다.
+ * 점 목록(2개 이상)을 따라 반복 왕복하는 원 — 공(PassChainBall)과 선수
+ * 유령(RunGhost)이 공유하는 애니메이션 엔진. cx/cy를 직접 animate하는
+ * 방식은 PlayerNode와 같다 — preserveAspectRatio="none" 환경에서 g의
+ * transform 대신 도형 고유 속성을 animate해야 어긋나지 않는다.
+ *
+ * 구간마다 소요 시간을 실제 거리 비례로 배분한다(`times`) — 안 그러면
+ * 짧은 구간과 긴 구간을 같은 시간에 지나가버려 부자연스럽다. 구간이 2개
+ * 이상(체인)이면 각 꼭짓점에서 갑자기 느려지지 않도록 linear로, 단일
+ * 구간이면 기존처럼 easeInOut으로 부드럽게 시작·끝난다.
  *
  * PNG 캡처(ShareCard)는 애니메이션 완료를 기다리지 않고 그 순간 상태를
- * 그대로 찍는다(lib/exportImage.ts) — 무한 반복 애니메이션이라 매번 다른
- * 위치에서 캡처되지만, "패스 경로 위 어딘가의 공"은 정적 이미지로도
- * 자연스러워 별도 처리를 하지 않는다.
- *
- * curved 패스(곡선 토글은 원래 움직임용이지만 패스에도 걸 수 있다)는 직선
- * 보간이 아니라 bezierPoint로 곡선 위 점 8개를 샘플링해 그 경로를 따라가게
- * 한다 — 직선 보간을 쓰면 공이 곡선을 가로질러 뚫고 지나가 버린다.
+ * 그대로 찍는다(lib/exportImage.ts) — 무한 반복이라 매번 다른 위치에서
+ * 캡처되지만, "경로 위 어딘가"는 정적 이미지로도 자연스러워 별도 처리하지
+ * 않는다.
  */
-function PassBall({ annotation, control }: { annotation: Annotation; control?: Point }) {
-  const cxKeyframes = control
-    ? BALL_SAMPLE_TS.map((t) => bezierPoint(annotation.from, control, annotation.to, t).x)
-    : [annotation.from.x, annotation.to.x]
-  const cyKeyframes = control
-    ? BALL_SAMPLE_TS.map((t) => bezierPoint(annotation.from, control, annotation.to, t).y)
-    : [annotation.from.y, annotation.to.y]
+function TravelingMarker({
+  points,
+  radius,
+  fill,
+  fillOpacity = 1,
+  stroke,
+  strokeWidth = 0.25,
+  strokeOpacity = 1,
+  segmentDuration,
+  repeatDelay,
+}: {
+  points: Point[]
+  radius: { rx: number; ry: number }
+  fill: string
+  fillOpacity?: number
+  stroke?: string
+  strokeWidth?: number
+  strokeOpacity?: number
+  segmentDuration: number
+  repeatDelay: number
+}) {
+  if (points.length < 2) return null
+
+  const distances = [0]
+  for (let i = 1; i < points.length; i++) {
+    distances.push(distances[i - 1] + Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y))
+  }
+  const total = distances[distances.length - 1]
+  const times = total > 1e-6 ? distances.map((d) => d / total) : points.map((_, i) => i / (points.length - 1))
+  const segments = points.length - 1
 
   return (
     <motion.ellipse
-      rx={BALL_RADIUS.rx}
-      ry={BALL_RADIUS.ry}
+      rx={radius.rx}
+      ry={radius.ry}
+      fill={fill}
+      fillOpacity={fillOpacity}
+      stroke={stroke}
+      strokeWidth={strokeWidth}
+      strokeOpacity={strokeOpacity}
+      pointerEvents="none"
+      initial={{ cx: points[0].x, cy: points[0].y }}
+      animate={{ cx: points.map((p) => p.x), cy: points.map((p) => p.y) }}
+      transition={{
+        duration: segmentDuration * segments,
+        times,
+        ease: segments > 1 ? 'linear' : 'easeInOut',
+        repeat: Infinity,
+        repeatDelay,
+      }}
+    />
+  )
+}
+
+/** 연결된 패스 체인을 따라 흐르는 공 — "패스가 실제로 연결되는 걸 보여지게". */
+function PassChainBall({ chain }: { chain: Annotation[] }) {
+  const points = chainSamplePoints(chain)
+  return (
+    <TravelingMarker
+      points={points}
+      radius={BALL_RADIUS}
       fill="#F8FAFC"
       stroke="#0F172A"
       strokeWidth={0.25}
       strokeOpacity={0.6}
-      pointerEvents="none"
-      initial={{ cx: annotation.from.x, cy: annotation.from.y }}
-      animate={{ cx: cxKeyframes, cy: cyKeyframes }}
-      transition={{ duration: 1.1, ease: 'easeInOut', repeat: Infinity, repeatDelay: 0.6 }}
+      segmentDuration={1.1}
+      repeatDelay={0.6}
+    />
+  )
+}
+
+/**
+ * 움직임 화살표를 따라 왕복하는 반투명 선수 색 원 — "선수가 이미 이동돼
+ * 있어서 화살표 끝부분이 안 보인다"는 문제를 화살표 자체를 고치는 대신,
+ * 실제로 그 방향으로 움직이는 걸 보여줘서 보완한다(2026-09-07 요청).
+ * GhostLayer의 잔상과 같은 톤(PLAYER_COLORS.ghost.fillOpacity)을 쓴다.
+ */
+function RunGhost({ annotation }: { annotation: Annotation }) {
+  const points = annotationSamplePoints(annotation)
+  return (
+    <TravelingMarker
+      points={points}
+      radius={RUN_GHOST_RADIUS}
+      fill={PLAYER_COLORS.own.fill}
+      fillOpacity={PLAYER_COLORS.ghost.fillOpacity}
+      segmentDuration={1.4}
+      repeatDelay={0.8}
     />
   )
 }
