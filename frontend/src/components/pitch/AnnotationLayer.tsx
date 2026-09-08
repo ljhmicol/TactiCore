@@ -27,6 +27,9 @@ interface AnnotationLayerProps {
 const BADGE_RADIUS = circularRadius(1.7)
 const DELETE_OFFSET = 2.2 // 선분 중점에서 화살표 진행 방향의 수직으로 치울 거리
 const BALL_RADIUS = circularRadius(1.1)
+// 구간(하나의 패스)당 소요 시간(초) — "패스 되는 공 속도가 너무 느려" 피드백(2026-09-08)으로
+// 기존 1.1초에서 0.45초로 단축(약 2.4배 빠름).
+const BALL_SEGMENT_DURATION = 0.45
 
 /**
  * 국면의 화살표(움직임/패스)를 그린다. 편집 화면과 PNG 카드(ShareCard)가 같은
@@ -150,7 +153,7 @@ function PassChainBall({ chain }: { chain: Annotation[] }) {
       initial={{ cx: points[0].x, cy: points[0].y }}
       animate={{ cx: points.map((p) => p.x), cy: points.map((p) => p.y) }}
       transition={{
-        duration: 1.1 * segments,
+        duration: BALL_SEGMENT_DURATION * segments,
         times: travelTimes(points),
         ease: segments > 1 ? 'linear' : 'easeInOut',
         repeat: Infinity,

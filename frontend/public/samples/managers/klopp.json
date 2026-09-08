@@ -62,8 +62,8 @@
         { "playerId": "p9", "x": 88, "y": 20 }
       ],
       "annotations": [
-        { "id": "klo-atk-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 88, "y": 62 } },
-        { "id": "klo-atk-lb", "type": "run", "from": { "x": 16, "y": 74 }, "to": { "x": 12, "y": 62 } },
+        { "id": "klo-atk-rb", "type": "run", "from": { "x": 88, "y": 62 }, "to": { "x": 90, "y": 55 } },
+        { "id": "klo-atk-lb", "type": "run", "from": { "x": 12, "y": 62 }, "to": { "x": 10, "y": 55 } },
         { "id": "klo-atk-p1", "type": "pass", "from": { "x": 68, "y": 52 }, "to": { "x": 86, "y": 24 } },
         { "id": "klo-atk-p2", "type": "pass", "from": { "x": 88, "y": 62 }, "to": { "x": 58, "y": 15 } }
       ],

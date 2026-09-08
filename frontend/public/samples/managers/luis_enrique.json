@@ -63,9 +63,9 @@
         { "playerId": "p9", "x": 78, "y": 16 }
       ],
       "annotations": [
-        { "id": "le-atk-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 92, "y": 26 } },
-        { "id": "le-atk-lb", "type": "run", "from": { "x": 16, "y": 74 }, "to": { "x": 8, "y": 30 } },
-        { "id": "le-atk-dm", "type": "run", "from": { "x": 50, "y": 62 }, "to": { "x": 50, "y": 80 } },
+        { "id": "le-atk-rb", "type": "run", "from": { "x": 92, "y": 26 }, "to": { "x": 97, "y": 2 } },
+        { "id": "le-atk-lb", "type": "run", "from": { "x": 8, "y": 30 }, "to": { "x": 3, "y": 4 } },
+        { "id": "le-atk-dm", "type": "run", "from": { "x": 50, "y": 80 }, "to": { "x": 50, "y": 85 } },
         { "id": "le-atk-p1", "type": "pass", "from": { "x": 65, "y": 78 }, "to": { "x": 90, "y": 30 } },
         { "id": "le-atk-p2", "type": "pass", "from": { "x": 45, "y": 44 }, "to": { "x": 50, "y": 12 } }
       ],

@@ -62,9 +62,9 @@
         { "playerId": "p11", "x": 50, "y": 12 }
       ],
       "annotations": [
-        { "id": "xa-atk-lwb", "type": "run", "from": { "x": 10, "y": 62 }, "to": { "x": 8, "y": 30 } },
-        { "id": "xa-atk-rwb", "type": "run", "from": { "x": 90, "y": 62 }, "to": { "x": 92, "y": 30 } },
-        { "id": "xa-atk-am", "type": "run", "from": { "x": 35, "y": 40 }, "to": { "x": 35, "y": 22 } },
+        { "id": "xa-atk-lwb", "type": "run", "from": { "x": 8, "y": 30 }, "to": { "x": 7, "y": 11 } },
+        { "id": "xa-atk-rwb", "type": "run", "from": { "x": 92, "y": 30 }, "to": { "x": 93, "y": 11 } },
+        { "id": "xa-atk-am", "type": "run", "from": { "x": 35, "y": 20 }, "to": { "x": 35, "y": 9 } },
         { "id": "xa-atk-p1", "type": "pass", "from": { "x": 40, "y": 64 }, "to": { "x": 35, "y": 24 } },
         { "id": "xa-atk-p2", "type": "pass", "from": { "x": 60, "y": 64 }, "to": { "x": 65, "y": 24 } }
       ],
@@ -85,8 +85,8 @@
         { "playerId": "p11", "x": 50, "y": 46 }
       ],
       "annotations": [
-        { "id": "xa-def-lwb", "type": "run", "from": { "x": 10, "y": 62 }, "to": { "x": 10, "y": 74 } },
-        { "id": "xa-def-rwb", "type": "run", "from": { "x": 90, "y": 62 }, "to": { "x": 90, "y": 74 } },
+        { "id": "xa-def-lwb", "type": "run", "from": { "x": 10, "y": 76 }, "to": { "x": 10, "y": 83 } },
+        { "id": "xa-def-rwb", "type": "run", "from": { "x": 90, "y": 76 }, "to": { "x": 90, "y": 83 } },
         { "id": "xa-def-st", "type": "run", "from": { "x": 50, "y": 46 }, "to": { "x": 45, "y": 38 } }
       ],
       "comment": "수비 시 윙백(20번 그리말도·30번 프림퐁)이 내려와 백5를 만들어 측면 크로스 코스를 지운다. 더블 피벗(34번 자카·8번 안드리히)이 그 앞 중앙을 막고, 쉐도우 2명(7번 호프만·10번 비르츠)과 22번 보니파스가 상대 빌드업 첫 줄을 압박한다 — 국면에 따라 5-2-3 블록으로 전환되는 구조."

@@ -62,9 +62,9 @@
         { "playerId": "p11", "x": 62, "y": 14 }
       ],
       "annotations": [
-        { "id": "sw-atk-cm", "type": "run", "from": { "x": 42, "y": 58 }, "to": { "x": 50, "y": 78 } },
-        { "id": "sw-atk-lb", "type": "run", "from": { "x": 16, "y": 74 }, "to": { "x": 12, "y": 58 } },
-        { "id": "sw-atk-rb", "type": "run", "from": { "x": 84, "y": 74 }, "to": { "x": 88, "y": 58 } },
+        { "id": "sw-atk-cm", "type": "run", "from": { "x": 50, "y": 78 }, "to": { "x": 52, "y": 84 } },
+        { "id": "sw-atk-lb", "type": "run", "from": { "x": 12, "y": 58 }, "to": { "x": 10, "y": 48 } },
+        { "id": "sw-atk-rb", "type": "run", "from": { "x": 88, "y": 58 }, "to": { "x": 90, "y": 48 } },
         { "id": "sw-atk-p1", "type": "pass", "from": { "x": 28, "y": 76 }, "to": { "x": 42, "y": 44 } },
         { "id": "sw-atk-p2", "type": "pass", "from": { "x": 42, "y": 44 }, "to": { "x": 18, "y": 22 } }
       ],
