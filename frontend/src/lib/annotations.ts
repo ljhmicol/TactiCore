@@ -136,6 +136,22 @@ export function bezierPoint(from: Point, control: Point, to: Point, t: number): 
   }
 }
 
+/**
+ * points를 따라 이동할 때 각 지점에 도달하는 시간 비율(0~1, 실제 거리 비례) —
+ * Framer Motion 키프레임 애니메이션의 `times`에 그대로 쓴다. 거리 비례가
+ * 아니면 짧은 구간과 긴 구간을 같은 시간에 지나가버려 부자연스럽다.
+ * PassChainBall·RunGhost·PlayerNode(달리기 모션)가 공유한다.
+ */
+export function travelTimes(points: Point[]): number[] {
+  if (points.length < 2) return points.map(() => 0)
+  const distances = [0]
+  for (let i = 1; i < points.length; i++) {
+    distances.push(distances[i - 1] + Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y))
+  }
+  const total = distances[distances.length - 1]
+  return total > 1e-6 ? distances.map((d) => d / total) : points.map((_, i) => i / (points.length - 1))
+}
+
 /** 화살촉 배지를 피하면서 클릭 지점(선분 중점)을 구한다. */
 export function arrowMidpoint(a: { from: Point; to: Point }): Point {
   return { x: (a.from.x + a.to.x) / 2, y: (a.from.y + a.to.y) / 2 }
@@ -151,7 +167,10 @@ export function annotationSamplePoints(ann: { from: Point; to: Point; curved?: b
   return BALL_SAMPLE_TS.map((t) => bezierPoint(ann.from, control, ann.to, t))
 }
 
-const CHAIN_ENDPOINT_EPS = 3 // 이 거리(피치 좌표 단위) 이내면 "같은 지점"으로 본다
+/** 이 거리(피치 좌표 단위) 이내면 "같은 지점"으로 본다 — 패스 체인 연결
+ * 판정과 PlayerNode의 "이 선수 자리에서 시작하는 run 화살표" 판정이 공유. */
+export const ANNOTATION_LINK_EPS = 3
+const CHAIN_ENDPOINT_EPS = ANNOTATION_LINK_EPS
 
 /**
  * 연결된 패스를 하나의 흐름으로 묶는다 — "수비수에서 미드필더로, 미드필더

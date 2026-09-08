@@ -1,6 +1,7 @@
 import { motion, type PanInfo } from 'framer-motion'
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
+import { ANNOTATION_LINK_EPS, annotationSamplePoints, travelTimes } from '@/lib/annotations'
 import { clampCoord, clientToPitch } from '@/lib/coords'
 import { circularRadius } from '@/lib/pitchMarkings'
 import { positionInfoAt } from '@/lib/positions'
@@ -38,6 +39,16 @@ const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
  * 원 위 라벨은 전술 역할이 지정돼 있으면 역할 이름, 없으면 포지션 코드를
  * 보여준다(2026-09-07 — "필드에서도 역할이 한눈에 보이게"). 역할이 포지션도
  * 함축하므로 둘 다 표시하지 않는다.
+ *
+ * 이 선수의 위치에서 시작하는 run 화살표가 있으면(2026-09-07, 2차 —
+ * "투명한 원 말고 선수 노드 자체가 화살표 방향으로 움직이게") 원·라벨·
+ * 번호·이름이 전부 그 화살표를 따라 왕복한다. run 화살표는 선수에
+ * 부착되지 않는 자유 좌표라(4단계 §5.1) ID로 연결할 수 없어, 화살표의
+ * from이 이 선수의 현재 position과 가까우면(ANNOTATION_LINK_EPS) "이
+ * 선수의 움직임"으로 본다. 애니메이션 시작점은 화살표의 from이 아니라
+ * 항상 실제 position으로 고정한다 — 손으로 그린 화살표가 선수 위치와
+ * 완벽히 일치하지 않을 수 있는데 from을 그대로 쓰면 시작하자마자 몇
+ * 유닛 순간이동하는 것처럼 보인다.
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
@@ -45,6 +56,9 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const setEditingPlayer = useAnalysisStore((s) => s.setEditingPlayer)
   const index = useAnalysisStore((s) => s.analysis?.players.findIndex((p) => p.id === player.id) ?? -1)
   const formation = useAnalysisStore((s) => s.analysis?.formation)
+  const runAnnotations = useAnalysisStore((s) =>
+    s.analysis?.phases[s.currentPhase].annotations.filter((a) => a.type === 'run'),
+  )
   const [dragging, setDragging] = useState(false)
   const transition = dragging ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
   const info = formation ? positionInfoAt(formation, index) : null
@@ -56,6 +70,29 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const role = findTacticalRole(player.tacticalRole)
   const topLabel = role?.label ?? info?.label
   const topLabelFontSize = role ? 1.4 : 1.7
+
+  const runMotionPoints = useMemo(() => {
+    const arrow = runAnnotations?.find(
+      (a) => Math.hypot(a.from.x - position.x, a.from.y - position.y) <= ANNOTATION_LINK_EPS,
+    )
+    if (!arrow) return null
+    const sampled = annotationSamplePoints(arrow)
+    return [position, ...sampled.slice(1)]
+  }, [runAnnotations, position])
+
+  const runTransition = runMotionPoints
+    ? {
+        duration: 1.6 * (runMotionPoints.length - 1),
+        times: travelTimes(runMotionPoints),
+        ease: 'easeInOut' as const,
+        repeat: Infinity,
+        repeatType: 'reverse' as const,
+        repeatDelay: 0.8,
+      }
+    : null
+  const activeTransition = runTransition ?? transition
+  const cx = runMotionPoints ? runMotionPoints.map((p) => p.x) : position.x
+  const cy = runMotionPoints ? runMotionPoints.map((p) => p.y) : position.y
 
   const handlePan = (_: PointerEvent | MouseEvent | TouchEvent, info: PanInfo) => {
     if (!svgRef.current) return
@@ -73,8 +110,8 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
     >
       <motion.ellipse
         initial={{ cx: position.x, cy: position.y }}
-        animate={{ cx: position.x, cy: position.y }}
-        transition={transition}
+        animate={{ cx, cy }}
+        transition={activeTransition}
         rx={OWN_RADIUS.rx}
         ry={OWN_RADIUS.ry}
         fill={lineColor?.fill ?? PLAYER_COLORS.own.fill}
@@ -85,8 +122,11 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
       {topLabel && (
         <motion.text
           initial={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
-          animate={{ x: position.x, y: position.y - OWN_RADIUS.ry - 1.4 }}
-          transition={transition}
+          animate={{
+            x: cx,
+            y: runMotionPoints ? runMotionPoints.map((p) => p.y - OWN_RADIUS.ry - 1.4) : position.y - OWN_RADIUS.ry - 1.4,
+          }}
+          transition={activeTransition}
           fill={PLAYER_COLORS.own.fill}
           fillOpacity={0.9}
           fontSize={topLabelFontSize}
@@ -98,8 +138,8 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
       )}
       <motion.text
         initial={{ x: position.x, y: position.y }}
-        animate={{ x: position.x, y: position.y }}
-        transition={transition}
+        animate={{ x: cx, y: cy }}
+        transition={activeTransition}
         fill={lineColor?.text ?? PLAYER_COLORS.own.text}
         fontSize={2.4}
         textAnchor="middle"
@@ -110,8 +150,11 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
       </motion.text>
       <motion.text
         initial={{ x: position.x, y: position.y + OWN_RADIUS.ry + 3 }}
-        animate={{ x: position.x, y: position.y + OWN_RADIUS.ry + 3 }}
-        transition={transition}
+        animate={{
+          x: cx,
+          y: runMotionPoints ? runMotionPoints.map((p) => p.y + OWN_RADIUS.ry + 3) : position.y + OWN_RADIUS.ry + 3,
+        }}
+        transition={activeTransition}
         fill="#F8FAFC"
         fontSize={2}
         fontWeight={700}

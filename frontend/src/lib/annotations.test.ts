@@ -6,6 +6,7 @@ import {
   buildPassChains,
   chainSamplePoints,
   curvedArrowGeometry,
+  travelTimes,
 } from '@/lib/annotations'
 import { analysisSchema } from '@/lib/schema'
 import type { Annotation } from '@/types/analysis'
@@ -138,6 +139,39 @@ describe('chainSamplePoints', () => {
       { x: 45, y: 55 },
       { x: 55, y: 20 },
     ])
+  })
+})
+
+describe('travelTimes', () => {
+  it('등간격 점이면 시간도 등간격이다', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 },
+      { x: 20, y: 0 },
+    ]
+    expect(travelTimes(points)).toEqual([0, 0.5, 1])
+  })
+
+  it('구간 길이가 다르면 시간도 거리에 비례해 나뉜다', () => {
+    const points = [
+      { x: 0, y: 0 },
+      { x: 10, y: 0 }, // 첫 구간 10
+      { x: 40, y: 0 }, // 둘째 구간 30, 전체 40
+    ]
+    const times = travelTimes(points)
+    expect(times[0]).toBe(0)
+    expect(times[1]).toBeCloseTo(0.25)
+    expect(times[2]).toBe(1)
+  })
+
+  it('점이 전부 같은 위치(길이 0)여도 죽지 않고 등간격으로 폴백한다', () => {
+    const p = { x: 5, y: 5 }
+    expect(travelTimes([p, p, p])).toEqual([0, 0.5, 1])
+  })
+
+  it('점이 1개 이하면 0으로 채운다', () => {
+    expect(travelTimes([{ x: 1, y: 1 }])).toEqual([0])
+    expect(travelTimes([])).toEqual([])
   })
 })
 
