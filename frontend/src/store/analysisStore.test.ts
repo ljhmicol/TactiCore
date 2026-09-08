@@ -154,3 +154,53 @@ describe('analysisStore — addOpponentsFromFormation', () => {
     expect(result.success).toBe(true)
   })
 })
+
+/** TO-DO(2026-09-08) — FM 스타일 압박 라인 5단계. GK는 그대로 두고 나머지를 평행이동한다. */
+describe('analysisStore — setPressingLineLevel', () => {
+  beforeEach(() => {
+    const analysis = createEmptyAnalysis('4-3-3', {
+      matchName: '테스트',
+      homeTeam: '홈',
+      awayTeam: '원정',
+      matchDate: '2026-09-08',
+      analyzedTeam: 'home',
+    })
+    useAnalysisStore.getState().loadAnalysis(analysis)
+  })
+
+  it('현재 국면에만 반영되고 다른 국면은 그대로 둔다', () => {
+    useAnalysisStore.getState().switchPhase('attack')
+    useAnalysisStore.getState().setPressingLineLevel('낮음')
+    const { analysis } = useAnalysisStore.getState()
+    expect(analysis!.phases.attack.pressingLineY).not.toBeUndefined()
+    expect(analysis!.phases.base.pressingLineY).toBeUndefined()
+    expect(analysis!.phases.defense.pressingLineY).toBeUndefined()
+  })
+
+  it('GK 위치는 바뀌지 않는다', () => {
+    const gkId = useAnalysisStore.getState().analysis!.players[0].id
+    const before = useAnalysisStore
+      .getState()
+      .analysis!.phases.base.positions.find((p) => p.playerId === gkId)
+    useAnalysisStore.getState().setPressingLineLevel('매우 낮음')
+    const after = useAnalysisStore.getState().analysis!.phases.base.positions.find((p) => p.playerId === gkId)
+    expect(after).toEqual(before)
+  })
+
+  it('GK를 제외한 선수 전원이 같은 양만큼 움직인다(간격 비율 보존)', () => {
+    const gkId = useAnalysisStore.getState().analysis!.players[0].id
+    const before = useAnalysisStore.getState().analysis!.phases.base.positions
+    useAnalysisStore.getState().setPressingLineLevel('낮음')
+    const after = useAnalysisStore.getState().analysis!.phases.base.positions
+    const deltas = before
+      .filter((p) => p.playerId !== gkId)
+      .map((p) => after.find((a) => a.playerId === p.playerId)!.y - p.y)
+    for (const d of deltas) expect(d).toBeCloseTo(deltas[0], 5)
+  })
+
+  it('결과가 analysisSchema를 통과한다', () => {
+    useAnalysisStore.getState().setPressingLineLevel('보통')
+    const result = analysisSchema.safeParse(useAnalysisStore.getState().analysis)
+    expect(result.success).toBe(true)
+  })
+})

@@ -1,7 +1,9 @@
 import { nanoid } from 'nanoid'
 import { create } from 'zustand'
 
+import type { PressingLineLevel } from '@/lib/compactness'
 import { FORMATIONS } from '@/lib/formations'
+import { findGkPlayerId, shiftPositionsToPressingLevel } from '@/lib/pressingLineSteps'
 import type {
   Analysis,
   AnnotationType,
@@ -47,15 +49,13 @@ export function createEmptyAnalysis(formation: string, match: MatchInfo): Analys
   }
 }
 
-/** 국면 전환 애니메이션 사양 (2단계 §8) — GhostLayer의 자동 노출 시간 계산에도 쓴다. */
+/** 국면 전환 애니메이션 사양 (2단계 §8). */
 export const PHASE_TRANSITION_MS = 600
-const GHOST_AUTO_HIDE_MS = 2000
 
 interface AnalysisStore {
   analysis: Analysis | null
   currentPhase: PhaseType
-  previousPhase: PhaseType | null // Ghost View가 참조하는 "직전 국면"
-  ghostAutoVisible: boolean // 전환 직후 2초간 자동으로 켜지는 Ghost 표시 (레이어 토글과 별개)
+  previousPhase: PhaseType | null // Ghost View(레이어 토글)가 참조하는 "직전 국면"
   layers: LayerToggles
   isMorphing: boolean
   isDirty: boolean
@@ -78,6 +78,7 @@ interface AnalysisStore {
   addOpponents: () => void // 현재 국면에 상대팀 11명 기본 배치 추가 (자팀 포메이션을 하프라인 기준 대칭)
   addOpponentsFromFormation: (formationName: string) => void // 자팀 대신 지정한 포메이션 템플릿을 대칭 배치 (TO-DO 4번)
   removeOpponents: () => void
+  setPressingLineLevel: (level: PressingLineLevel) => void // GK 제외 전원을 평행이동해 압박 라인을 5단계로 지정 (간격 비율 유지)
   setComment: (phase: PhaseType, text: string) => void
   setSummary: (text: string) => void
   setMatchInfo: (patch: Partial<MatchInfo>) => void
@@ -99,13 +100,11 @@ const defaultLayers: LayerToggles = {
 }
 
 let morphTimer: ReturnType<typeof setTimeout> | undefined
-let ghostTimer: ReturnType<typeof setTimeout> | undefined
 
 export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   analysis: null,
   currentPhase: 'base',
   previousPhase: null,
-  ghostAutoVisible: false,
   layers: defaultLayers,
   isMorphing: false,
   isDirty: false,
@@ -121,7 +120,6 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       analysis: null,
       currentPhase: 'base',
       previousPhase: null,
-      ghostAutoVisible: false,
       isDirty: false,
       drawTool: 'select',
       curvedDraw: false,
@@ -135,12 +133,10 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
     if (next === currentPhase) return
 
     clearTimeout(morphTimer)
-    clearTimeout(ghostTimer)
 
-    set({ previousPhase: currentPhase, currentPhase: next, isMorphing: true, ghostAutoVisible: true })
+    set({ previousPhase: currentPhase, currentPhase: next, isMorphing: true })
 
     morphTimer = setTimeout(() => set({ isMorphing: false }), PHASE_TRANSITION_MS)
-    ghostTimer = setTimeout(() => set({ ghostAutoVisible: false }), GHOST_AUTO_HIDE_MS)
   },
 
   setIsMorphing: (v) => set({ isMorphing: v }),
@@ -259,6 +255,25 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
     void _drop
     set({
       analysis: { ...analysis, phases: { ...analysis.phases, [currentPhase]: rest } },
+      isDirty: true,
+    })
+  },
+
+  setPressingLineLevel: (level) => {
+    const { analysis, currentPhase } = get()
+    if (!analysis) return
+    const phase = analysis.phases[currentPhase]
+    const gkId = findGkPlayerId(analysis.players, analysis.formation)
+    const result = shiftPositionsToPressingLevel(phase.positions, gkId, level)
+    if (!result) return
+    set({
+      analysis: {
+        ...analysis,
+        phases: {
+          ...analysis.phases,
+          [currentPhase]: { ...phase, positions: result.positions, pressingLineY: result.pressingLineY },
+        },
+      },
       isDirty: true,
     })
   },

@@ -26,7 +26,9 @@ import { PlayerNode } from '@/components/pitch/PlayerNode'
 import { PressingLine } from '@/components/pitch/PressingLine'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import type { PressingLineLevel } from '@/lib/compactness'
 import { FORMATION_NAMES } from '@/lib/formations'
+import { currentPressingLineLevel, findGkPlayerId, PRESSING_LINE_LEVELS } from '@/lib/pressingLineSteps'
 import { useAnalysisStore } from '@/store/analysisStore'
 
 /**
@@ -55,12 +57,12 @@ export function EditorPage() {
   const analysis = useAnalysisStore((s) => s.analysis)
   const currentPhase = useAnalysisStore((s) => s.currentPhase)
   const previousPhase = useAnalysisStore((s) => s.previousPhase)
-  const ghostAutoVisible = useAnalysisStore((s) => s.ghostAutoVisible)
   const layers = useAnalysisStore((s) => s.layers)
   const drawTool = useAnalysisStore((s) => s.drawTool)
   const addOpponents = useAnalysisStore((s) => s.addOpponents)
   const addOpponentsFromFormation = useAnalysisStore((s) => s.addOpponentsFromFormation)
   const removeOpponents = useAnalysisStore((s) => s.removeOpponents)
+  const setPressingLineLevel = useAnalysisStore((s) => s.setPressingLineLevel)
   const removeAnnotation = useAnalysisStore((s) => s.removeAnnotation)
   const addPlayer = useAnalysisStore((s) => s.addPlayer)
   // 화살표 선택 상태. 피치 어디를 눌러도(pointerdown 버블링) 해제된다 —
@@ -82,8 +84,12 @@ export function EditorPage() {
   }
 
   const phase = analysis.phases[currentPhase]
-  const showGhost = Boolean(previousPhase) && previousPhase !== currentPhase && (layers.ghostView || ghostAutoVisible)
+  // 국면 전환 때 잠깐 자동으로 뜨던 고스트는 없앴다(2026-09-08 "잠깐 보이는 고스트
+  // 없애줘") — 이제 레이어 칩으로 켠 경우에만(Ghost View, 수동 토글) 보인다.
+  const showGhost = Boolean(previousPhase) && previousPhase !== currentPhase && layers.ghostView
   const hasOpponent = Boolean(phase.opponentPositions && phase.opponentPositions.length > 0)
+  const gkId = findGkPlayerId(analysis.players, analysis.formation)
+  const pressingLevel = currentPressingLineLevel(phase.positions, gkId)
 
   return (
     <div className="flex flex-col gap-4 p-6 pb-24 lg:pb-6">
@@ -169,6 +175,26 @@ export function EditorPage() {
                 {hasOpponent ? '상대팀 제거' : '상대팀 추가'}
               </Button>
             </div>
+          </div>
+          <div className="flex w-full max-w-md items-center gap-2">
+            {/* FM 스타일 압박 라인 5단계(2026-09-08 사용자 요청) — GK를 제외한 전원을
+                평행이동해서 공격·미드·수비 라인 사이 간격(비율)은 그대로 두고
+                대형 전체를 밀어올리거나 내린다(lib/pressingLineSteps.ts). 현재
+                단계를 그대로 선택값으로 보여준다(쓰기 전용 트리거가 아님) —
+                "지금 몇 단계인지" 자체가 정보라서. */}
+            <span className="text-xs text-muted-foreground">압박 라인</span>
+            <Select value={pressingLevel ?? undefined} onValueChange={(v) => setPressingLineLevel(v as PressingLineLevel)}>
+              <SelectTrigger className="h-9 w-[110px]" aria-label="압박 라인 단계 선택">
+                <SelectValue placeholder="단계 선택" />
+              </SelectTrigger>
+              <SelectContent>
+                {PRESSING_LINE_LEVELS.map((level) => (
+                  <SelectItem key={level} value={level}>
+                    {level}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
