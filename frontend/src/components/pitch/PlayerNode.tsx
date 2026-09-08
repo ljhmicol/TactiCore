@@ -7,7 +7,7 @@ import { circularRadius } from '@/lib/pitchMarkings'
 import { positionInfoAt } from '@/lib/positions'
 import { findTacticalRole } from '@/lib/tacticalRoles'
 import { PLAYER_COLORS, POSITION_LINE_COLORS } from '@/lib/theme'
-import { useAnalysisStore } from '@/store/analysisStore'
+import { PHASE_TRANSITION_MS, useAnalysisStore } from '@/store/analysisStore'
 import type { Player, Point } from '@/types/analysis'
 
 import { usePitchSvg } from './PitchContext'
@@ -40,15 +40,18 @@ const OWN_RADIUS = circularRadius(PLAYER_COLORS.own.radius)
  * 보여준다(2026-09-07 — "필드에서도 역할이 한눈에 보이게"). 역할이 포지션도
  * 함축하므로 둘 다 표시하지 않는다.
  *
- * 이 선수의 위치에서 시작하는 run 화살표가 있으면(2026-09-07, 2차 —
- * "투명한 원 말고 선수 노드 자체가 화살표 방향으로 움직이게") 원·라벨·
- * 번호·이름이 전부 그 화살표를 따라 왕복한다. run 화살표는 선수에
- * 부착되지 않는 자유 좌표라(4단계 §5.1) ID로 연결할 수 없어, 화살표의
- * from이 이 선수의 현재 position과 가까우면(ANNOTATION_LINK_EPS) "이
- * 선수의 움직임"으로 본다. 애니메이션 시작점은 화살표의 from이 아니라
- * 항상 실제 position으로 고정한다 — 손으로 그린 화살표가 선수 위치와
- * 완벽히 일치하지 않을 수 있는데 from을 그대로 쓰면 시작하자마자 몇
- * 유닛 순간이동하는 것처럼 보인다.
+ * 공격·수비 국면에 이 선수의 도착 지점(position)과 끝점이 가까운 run
+ * 화살표가 있으면(2026-09-07, 3차 — "기본 국면에서는 가만히 있고, 공격·
+ * 수비 국면에서 화살표로 선수들이 움직이는 게 표현되면, 왕복 말고") 원·
+ * 라벨·번호·이름이 전부 그 화살표 경로를 따라 국면 전환 애니메이션(0.6초,
+ * PHASE_TRANSITION_MS와 동일)을 딱 한 번만 재생하고 끝점에 멈춘다 — 반복
+ * 왕복하지 않는다. 기본 국면은 이 탐색 자체를 건너뛰어 항상 정지 상태다.
+ * run 화살표는 선수에 부착되지 않는 자유 좌표라(4단계 §5.1) ID로 연결할
+ * 수 없어, 화살표의 to가 이 선수의 도착 position과 가까우면
+ * (ANNOTATION_LINK_EPS) "이 선수가 여기로 온 움직임"으로 본다. PNG
+ * 캡처(ShareCard)는 isMorphing이 꺼질 때까지 기다리는데(lib/exportImage.ts)
+ * 그 시점이 PHASE_TRANSITION_MS와 같아서, 이 애니메이션 길이도 똑같이
+ * 맞춰야 캡처 시점에 선수가 경로 중간에 멈춰 있는 사고가 안 난다.
  */
 export function PlayerNode({ player, position }: PlayerNodeProps) {
   const svgRef = usePitchSvg()
@@ -56,8 +59,10 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const setEditingPlayer = useAnalysisStore((s) => s.setEditingPlayer)
   const index = useAnalysisStore((s) => s.analysis?.players.findIndex((p) => p.id === player.id) ?? -1)
   const formation = useAnalysisStore((s) => s.analysis?.formation)
+  // 기본 국면은 포메이션만 보여주는 정지 상태여야 하므로 애초에 조회하지
+  // 않는다 — "기본 국면에서는 화살표방향으로 움직이지 않고... 가만히".
   const runAnnotations = useAnalysisStore((s) =>
-    s.analysis?.phases[s.currentPhase].annotations.filter((a) => a.type === 'run'),
+    s.currentPhase === 'base' ? undefined : s.analysis?.phases[s.currentPhase].annotations.filter((a) => a.type === 'run'),
   )
   const [dragging, setDragging] = useState(false)
   const transition = dragging ? { duration: 0 } : { duration: 0.6, ease: [0.4, 0, 0.2, 1] as const }
@@ -72,25 +77,18 @@ export function PlayerNode({ player, position }: PlayerNodeProps) {
   const topLabelFontSize = role ? 1.4 : 1.7
 
   const runMotionPoints = useMemo(() => {
-    const arrow = runAnnotations?.find(
-      (a) => Math.hypot(a.from.x - position.x, a.from.y - position.y) <= ANNOTATION_LINK_EPS,
-    )
-    if (!arrow) return null
-    const sampled = annotationSamplePoints(arrow)
-    return [position, ...sampled.slice(1)]
+    // 화살표의 끝(to)이 이 선수가 지금 서 있는 자리와 가까우면 "그 화살표를
+    // 따라 여기 도착했다"는 뜻으로 본다 — from이 아니라 to로 찾는다.
+    const arrow = runAnnotations?.find((a) => Math.hypot(a.to.x - position.x, a.to.y - position.y) <= ANNOTATION_LINK_EPS)
+    return arrow ? annotationSamplePoints(arrow) : null
   }, [runAnnotations, position])
 
+  // 왕복하지 않는다 — repeat 없이 딱 한 번, 국면 전환과 같은 길이로 재생하고
+  // 끝점에 멈춘다("왕복으로 말고" 피드백).
   const runTransition = runMotionPoints
-    ? {
-        duration: 1.6 * (runMotionPoints.length - 1),
-        times: travelTimes(runMotionPoints),
-        ease: 'easeInOut' as const,
-        repeat: Infinity,
-        repeatType: 'reverse' as const,
-        repeatDelay: 0.8,
-      }
+    ? { duration: PHASE_TRANSITION_MS / 1000, times: travelTimes(runMotionPoints), ease: 'easeInOut' as const }
     : null
-  const activeTransition = runTransition ?? transition
+  const activeTransition = dragging ? { duration: 0 } : (runTransition ?? transition)
   const cx = runMotionPoints ? runMotionPoints.map((p) => p.x) : position.x
   const cy = runMotionPoints ? runMotionPoints.map((p) => p.y) : position.y
 
