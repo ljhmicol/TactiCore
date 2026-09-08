@@ -1,15 +1,37 @@
 import { useRef, useState } from 'react'
 
+import { GifExportRunner } from '@/components/export/GifExportRunner'
 import { ShareCard } from '@/components/export/ShareCard'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { exportCard } from '@/lib/exportImage'
 import type { Analysis, PhaseType } from '@/types/analysis'
 
-/** PNG 카드 내보내기 UI. 비율(1:1/4:5)을 고른다. 하단 텍스트는 국면별로 다르다 — 기본은 종합 평가, 공격·수비는 해당 국면 코멘트. */
+function downloadBlob(blob: Blob, filename: string) {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
+
+/**
+ * PNG·GIF 카드 내보내기 UI. 비율(1:1/4:5)은 PNG 전용 — GIF는 프레임을
+ * 수십 장 인코딩해야 해서 1:1 정사각형 하나로 범위를 좁혔다(TO-DO 6번).
+ * 하단 텍스트는 국면별로 다르다 — 기본은 종합 평가, 공격·수비는 해당
+ * 국면 코멘트.
+ *
+ * GIF는 PNG처럼 ref 하나를 한 번 캡처하는 게 아니라 프레임마다 다시
+ * 렌더링→캡처해야 해서(GifExportRunner) 버튼을 누른 시점에만 그 러너를
+ * 마운트하고, 다 끝나면(onDone/onError) 언마운트한다.
+ */
 export function ExportControls({ analysis, phase }: { analysis: Analysis; phase: PhaseType }) {
   const [ratio, setRatio] = useState<'1:1' | '4:5'>('1:1')
   const [exporting, setExporting] = useState(false)
+  const [exportingGif, setExportingGif] = useState(false)
+  const [gifRunning, setGifRunning] = useState(false)
+  const [gifError, setGifError] = useState<string | null>(null)
   const cardRef = useRef<HTMLDivElement>(null)
 
   const handleExport = async () => {
@@ -22,22 +44,48 @@ export function ExportControls({ analysis, phase }: { analysis: Analysis; phase:
     }
   }
 
+  const handleGifExport = () => {
+    setGifError(null)
+    setExportingGif(true)
+    setGifRunning(true)
+  }
+
+  const handleGifDone = (blob: Blob) => {
+    downloadBlob(blob, `tacticore_${Date.now()}.gif`)
+    setGifRunning(false)
+    setExportingGif(false)
+  }
+
+  const handleGifError = (err: unknown) => {
+    console.error('GIF 내보내기 실패', err)
+    setGifError(err instanceof Error ? err.message : 'GIF 내보내기에 실패했습니다.')
+    setGifRunning(false)
+    setExportingGif(false)
+  }
+
   return (
-    <div className="flex items-center gap-2">
-      <Select value={ratio} onValueChange={(v) => setRatio(v as '1:1' | '4:5')}>
-        <SelectTrigger className="w-20">
-          <SelectValue />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="1:1">1:1</SelectItem>
-          <SelectItem value="4:5">4:5</SelectItem>
-        </SelectContent>
-      </Select>
-      <Button size="sm" onClick={handleExport} disabled={exporting}>
-        {exporting ? '내보내는 중…' : 'PNG 내보내기'}
-      </Button>
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <Select value={ratio} onValueChange={(v) => setRatio(v as '1:1' | '4:5')}>
+          <SelectTrigger className="w-20">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="1:1">1:1</SelectItem>
+            <SelectItem value="4:5">4:5</SelectItem>
+          </SelectContent>
+        </Select>
+        <Button size="sm" onClick={handleExport} disabled={exporting}>
+          {exporting ? '내보내는 중…' : 'PNG 내보내기'}
+        </Button>
+        <Button size="sm" variant="outline" onClick={handleGifExport} disabled={exportingGif}>
+          {exportingGif ? 'GIF 만드는 중…' : 'GIF 내보내기'}
+        </Button>
+      </div>
+      {gifError && <p className="rounded-md bg-destructive/10 p-2 text-xs text-destructive">{gifError}</p>}
 
       <ShareCard ref={cardRef} analysis={analysis} phase={phase} ratio={ratio} />
+      {gifRunning && <GifExportRunner analysis={analysis} onDone={handleGifDone} onError={handleGifError} />}
     </div>
   )
 }
